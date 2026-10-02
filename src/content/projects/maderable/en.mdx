@@ -1,0 +1,34 @@
+import { pending } from "@/lib/pending";
+
+export const meta = {
+  title: "Maderable",
+  tagline: "Quoting, cut optimization and production for a board shop",
+  summary:
+    "The system of a melamine board shop in Ecuador, from the customer's cut list to dispatch: cut optimization, quoting, customer review, orders, the workshop floor and label printing.",
+  relation: "client",
+  role: "Sole engineer, from the domain model to the deploy",
+  period: { start: 2025, end: "present" },
+  stack: [
+    "FastAPI",
+    "PostgreSQL",
+    "OR-Tools CP-SAT",
+    "Rust",
+    "React",
+    "TypeScript",
+    "Docker Compose",
+    "Caddy",
+  ],
+  highlights: [
+    "Optimizes what the customer pays for, not the placement: the half board is a real bin.",
+    "Guillotine heuristic search, an exact CP-SAT endgame and a Rust kernel that returns exactly what the Python reference returns.",
+    "Deterministic by design: search budgets are counted in units of work, not seconds.",
+    "A live quote becomes an immutable order, and a Windows agent prints its labels on the shop's printers.",
+  ],
+  tier: "featured",
+  order: 1,
+  unconfirmed: [
+    pending("Maderable: can the site link to the shop's public website?"),
+  ],
+};
+
+{/* The case study is written in phase 4. */}

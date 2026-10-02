@@ -3,7 +3,8 @@
  * dictionary must satisfy (see `es.ts`), so a missing or extra key is a type
  * error, not a blank label in production.
  *
- * Long-form content (case studies, notes) lives in MDX, not here.
+ * Long-form content (case studies, notes) lives in MDX, and structured
+ * content (experience, stack…) in `src/data`, not here.
  */
 export const en = {
   meta: {
@@ -27,9 +28,120 @@ export const en = {
     about: "About",
     contact: "Contact",
   },
-  placeholder: {
-    role: "Software Engineer",
-    body: "This site is being rebuilt. Projects, case studies and engineering notes are on their way.",
+  common: {
+    present: "present",
+    caseStudy: "Case study",
+    readNote: "Read note",
+  },
+  hero: {
+    eyebrow: "Denis Siavichay · Software Engineer",
+    title: "I build the software a business runs on.",
+    lede: "Quoting, inventory, invoicing, production — modeled from the domain up and shipped with the pipeline that keeps it reliable.",
+    primaryCta: "See the work",
+    secondaryCta: "Get in touch",
+    location: "Based in Ecuador · remote, UTC−5",
+  },
+  status: {
+    title: "This build",
+    mode: "static",
+    commit: "commit",
+    built: "built",
+    toolchain: "toolchain",
+    rendering: "rendering",
+    renderingValue: "prerendered at build time",
+    languages: "languages",
+    source: "source",
+    localBuild: "local build",
+    viewCommit: "view the commit on GitHub",
+    caption:
+      "Read from the build itself when the site was compiled. Nothing here is typed by hand.",
+  },
+  capabilities: {
+    eyebrow: "What I build",
+    title: "Software for the way a business actually operates.",
+    lede: "Four kinds of problems I keep coming back to. Each one points to the work that shows it.",
+    evidence: "Evidence",
+  },
+  work: {
+    eyebrow: "Selected work",
+    title: "Four systems, four different lessons.",
+    lede: "A client's workshop, my own invoicing product, a salon's day-to-day and a municipality's back office. Each case study covers the problem, the decisions and the trade-offs.",
+    relation: {
+      client: "Client",
+      "own-product": "Own product",
+      "in-house": "In-house",
+    },
+    role: "Role",
+    stack: "Stack",
+    illustration: "Illustrative cut plan · synthetic data",
+    illustrationLabels: {
+      board: "half board",
+      kerf: "kerf",
+      offcut: "offcut",
+    },
+    openSource: {
+      title: "Open source",
+      lede: "Django packages published on PyPI.",
+      pypi: "PyPI",
+      source: "Source",
+      releases: "Releases",
+    },
+  },
+  notes: {
+    eyebrow: "Engineering notes",
+    title: "The technical stories behind the decisions.",
+    lede: "Short write-ups on what each project taught me, with the trade-offs left in.",
+    from: "From",
+  },
+  process: {
+    eyebrow: "How I work",
+    title: "From understanding the business to improving what's running.",
+    lede: "Six steps, each with an example from a real project.",
+    example: "Example",
+  },
+  experience: {
+    eyebrow: "Experience",
+    title: "Building software since 2013.",
+    lede: "Public sector, e-commerce and independent work. Each entry: the problem, what I did and, where it's documented, the result.",
+    problem: "Problem",
+    projects: "Projects",
+    education: "Education",
+  },
+  stack: {
+    eyebrow: "Stack",
+    title: "Tools, and where I've used them.",
+    lede: "No percentages. Each technology names the projects where it's in use.",
+    usedIn: "Used in",
+    thisSite: "this site",
+  },
+  about: {
+    eyebrow: "About",
+    title: "Understand the business, then build.",
+    paragraphs: [
+      "I'm Denis, a software engineer based in Ecuador. I started in 2013 with an ordering app for a local business, then spent six years at the Municipality of Morona, where I went from systems analyst to leading the team that built SIM.",
+      "From there I joined Jüsto, an e-commerce company in Mexico, working remotely as it moved to microservices. Today I combine a job with client projects and Faclab, my own product.",
+      "The thread through all of it: I want to understand how a business works before I model it, and I stay for what happens after the deploy.",
+    ],
+    facts: {
+      basedIn: "Based in",
+      languages: "Languages",
+      education: "Education",
+      educationValue: "Master's in Software Engineering, UNIR",
+    },
+  },
+  contact: {
+    eyebrow: "Contact",
+    title: "Let's build something useful.",
+    lede: "If you have a process that should be software, or a team that needs someone to take a problem all the way to production, write to me.",
+    email: "Email me",
+    copy: "Copy email",
+    copied: "Email copied to the clipboard",
+    elsewhere: "Elsewhere",
+  },
+  footer: {
+    source: "Source code",
+    builtWith: "Built with Next.js and prerendered.",
+    backToTop: "Back to top",
   },
   notFound: {
     title: "This page doesn't exist.",

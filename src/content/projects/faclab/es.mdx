@@ -1,0 +1,30 @@
+import { pending } from "@/lib/pending";
+
+export const meta = {
+  title: "Faclab",
+  tagline: "Ventas, inventario y facturación electrónica para Ecuador",
+  summary:
+    "Ventas, inventario, compras y punto de venta con facturación electrónica del SRI. Es mi producto propio, y el proyecto donde la arquitectura pasó de un monolito a servicios, y en parte de vuelta.",
+  relation: "own-product",
+  role: "Autoría completa: producto, arquitectura y código",
+  period: { start: 2022, end: 2026 },
+  stack: [
+    "FastAPI",
+    "SQLAlchemy",
+    "PostgreSQL",
+    "Kafka",
+    "TypeScript",
+    "Fastify",
+    "OpenTelemetry",
+  ],
+  highlights: [
+    "Monolito Django, refactor hexagonal, servicios, y un servicio de firma que se reintegró cuando la separación resultó demasiado fina.",
+    "Clean Architecture y CQRS en el core, con value objects como RUC y Money.",
+    "Máquina de estados de la factura dirigida por eventos, con retries de 1 s / 2 s / 4 s y dead-letter queue.",
+  ],
+  tier: "standard",
+  order: 2,
+  unconfirmed: [pending("Faclab: is it in production, or used by customers?")],
+};
+
+{/* El case study se escribe en la fase 4. */}

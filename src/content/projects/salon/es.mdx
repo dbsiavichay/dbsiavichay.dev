@@ -1,0 +1,35 @@
+import { pending } from "@/lib/pending";
+
+{/* El salón nunca se nombra. El nombre del producto solo se usa cuando esté confirmado. */}
+
+export const meta = {
+  title: "Gestión de salón",
+  tagline:
+    "Agenda, pagos y caja para un salón de belleza, pensado para el teléfono",
+  summary:
+    "Agenda, clientes, servicios, caja, gastos y fotos para un salón de belleza, diseñado primero para el teléfono, con las reglas de negocio aplicadas donde no se pueden saltar.",
+  relation: "client",
+  role: "Ingeniería completa: producto, código y operación",
+  period: { start: 2026, end: 2026 },
+  stack: [
+    "FastAPI",
+    "SQLAlchemy",
+    "PostgreSQL",
+    "React",
+    "TypeScript",
+    "Docker",
+    "Caddy",
+  ],
+  highlights: [
+    "El doble agendamiento es imposible: lo rechaza un constraint de exclusión GiST en PostgreSQL.",
+    "Los precios se congelan en cada cita; los pagos son append-only y las correcciones son reembolsos.",
+    "La multi-tenancy y el roster de profesionales se construyeron y luego se retiraron cuando el negocio resultó ser un solo salón.",
+  ],
+  tier: "standard",
+  order: 3,
+  unconfirmed: [
+    pending("Salon: can the product name be published? Is it in production?"),
+  ],
+};
+
+{/* El case study se escribe en la fase 4. */}

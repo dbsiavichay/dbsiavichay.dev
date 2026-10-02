@@ -1,0 +1,30 @@
+import { pending } from "@/lib/pending";
+
+export const meta = {
+  title: "Faclab",
+  tagline: "Sales, inventory and electronic invoicing for Ecuador",
+  summary:
+    "Sales, inventory, purchasing and point of sale with electronic invoicing for Ecuador's tax authority (SRI). My own product, and the project where the architecture went from a monolith to services, and partly back.",
+  relation: "own-product",
+  role: "Sole author: product, architecture and code",
+  period: { start: 2022, end: 2026 },
+  stack: [
+    "FastAPI",
+    "SQLAlchemy",
+    "PostgreSQL",
+    "Kafka",
+    "TypeScript",
+    "Fastify",
+    "OpenTelemetry",
+  ],
+  highlights: [
+    "Django monolith, hexagonal refactor, services, and a signing service merged back when the split proved too fine.",
+    "Clean Architecture and CQRS in the core, with value objects such as RUC and Money.",
+    "An event-driven invoice state machine with 1 s / 2 s / 4 s retries and a dead-letter queue.",
+  ],
+  tier: "standard",
+  order: 2,
+  unconfirmed: [pending("Faclab: is it in production, or used by customers?")],
+};
+
+{/* The case study is written in phase 4. */}

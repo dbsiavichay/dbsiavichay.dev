@@ -2,6 +2,7 @@ import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import type { Metadata, Viewport } from "next";
 
+import { Footer } from "@/components/navigation/footer";
 import { Navbar } from "@/components/navigation/navbar";
 import { SkipLink } from "@/components/navigation/skip-link";
 import { localeTags, locales } from "@/i18n/config";
@@ -53,6 +54,7 @@ export default async function RootLayout({ children }: LayoutProps<"/[lang]">) {
         >
           {children}
         </main>
+        <Footer />
       </body>
     </html>
   );
