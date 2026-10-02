@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   absoluteUrl,
   alternates,
+  articleJsonLd,
   localePath,
   openGraph,
   profileJsonLd,
@@ -56,6 +57,42 @@ describe("seo", () => {
       inLanguage: "en",
       mainEntity: { "@id": person?.["@id"] },
     });
+  });
+
+  it("marks case studies and notes as articles by the site's author", () => {
+    const og = openGraph(
+      "en",
+      { title: "T", description: "D", path: "/notes/x" },
+      "article",
+    );
+    expect(og).toMatchObject({
+      type: "article",
+      url: "/en/notes/x",
+      authors: ["Denis Siavichay"],
+    });
+  });
+
+  it("describes an article and where it sits in the site", () => {
+    const data = articleJsonLd(
+      "es",
+      { title: "Maderable", description: "D", path: "/projects/maderable" },
+      "Denis Siavichay",
+    );
+    const [article, breadcrumb] = data["@graph"];
+    expect(article).toMatchObject({
+      "@type": "TechArticle",
+      headline: "Maderable",
+      inLanguage: "es",
+      author: { name: "Denis Siavichay" },
+    });
+    expect(article?.url).toMatch(/\/es\/projects\/maderable$/);
+    expect(breadcrumb).toMatchObject({ "@type": "BreadcrumbList" });
+    const items = (breadcrumb as { itemListElement: { name: string }[] })
+      .itemListElement;
+    expect(items.map((item) => item.name)).toEqual([
+      "Denis Siavichay",
+      "Maderable",
+    ]);
   });
 
   it("escapes markup so JSON-LD can't close its script tag", () => {

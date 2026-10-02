@@ -6,4 +6,48 @@ export const meta = {
   order: 2,
 };
 
-{/* The note is written in phase 4. */}
+## Two migrations
+
+At Jüsto I took part in an e-commerce platform's move from a Django system to microservices, as one engineer in a team. In Faclab, my own product, I made the same kind of decisions alone, over four years, and had to live with every one of them. The git history keeps them in order, which makes it a useful record of what each step actually cost.
+
+## The sequence
+
+1. **A Django monolith.** Sales, purchases, inventory and invoicing in one deployable. Invoices were signed and sent to the tax authority by a background task.
+2. **Hexagonal, inside the monolith.** Use cases and repositories, with adapters at the edges. The boundaries moved; the deployable didn't.
+3. **A signing service.** It stored signing certificates, encrypted, and sealed documents on request.
+4. **An invoicing service** in TypeScript, fed by Kafka. It received a message when a sale was invoiced, called the core back over HTTP for the data, asked the signing service for a seal and talked to the tax authority.
+5. **Partly back.** The sale event started carrying the whole sale, and signing moved back inside the invoicing service.
+
+Step 2 was the cheapest of the five: drawing boundaries inside one deployable is cheap to try and cheap to undo. Every later step crossed a network.
+
+## What a service boundary costs
+
+On paper, signing is a textbook service: a narrow interface — a document in, a signed document out — and a secret to guard. In practice the split added, on every single invoice:
+
+- another network call, with its own timeouts and failure modes;
+- another deployable and another datastore to run and back up;
+- the certificates' upload and storage managed apart from the invoices that use them.
+
+And it bought little in return. Nothing but invoicing ever needed a signature, and when signing failed, the invoice failed with it: there was no independent failure to isolate. A boundary that doesn't match a reason to change, or a way to fail independently, is overhead.
+
+## A notification that forces a callback
+
+The first version of the invoicing service received a message that said, in effect, _sale 42 was invoiced_, and then called the core over HTTP to ask what sale 42 was. That is a notification, not an event, and it quietly undoes most of what the queue was for:
+
+- both services had to be up at the same time, so the queue no longer decoupled their availability;
+- the sale could change between the message and the callback;
+- the core had to keep an endpoint whose only client was another service of mine.
+
+The fix was to make the event carry the state: the confirmed sale now includes the customer and every line — product, quantity, discount, tax — so the consumer can do its work without asking anyone. The price is a bigger message and a contract to keep: the invoicing service validates every message at the boundary, and the schema is now as much an API as any HTTP endpoint.
+
+## Merging back
+
+With the sale arriving complete, the remaining round trip was the seal. I moved signing into the invoicing service: the XML is signed locally, the certificate is stored next to the rest of the invoicing data, and the company's fiscal configuration says which certificate to use. One fewer service, one fewer hop per invoice, and nothing lost, because nothing else depended on it.
+
+Merging back isn't a retreat. It's the same judgment that created the service, applied with more information.
+
+## The rule
+
+Extract a service when you can name the reason in terms of **change** or **failure**: it changes for different reasons and at a different pace, or it must keep working when its neighbor doesn't. Invoicing passes that test — it's asynchronous by nature and depends on an external authority with its own failures. Signing didn't.
+
+The right granularity is something you discover, and sometimes the discovery is that two services were one.

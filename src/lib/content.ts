@@ -1,4 +1,5 @@
 import { readdirSync } from "node:fs";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 
 import type { MDXContent } from "mdx/types";
@@ -6,6 +7,7 @@ import { z } from "zod";
 
 import type { Locale } from "@/i18n/config";
 
+import { extractHeadings, readingMinutes, type Heading } from "./mdx-source";
 import {
   noteMetaSchema,
   projectMetaSchema,
@@ -96,6 +98,30 @@ export async function getNote(slug: string, locale: Locale): Promise<Note> {
 
 const byOrder = (a: { order: number }, b: { order: number }) =>
   a.order - b.order;
+
+/** The rendered body of an entry, with what the page shows around it. */
+export type Body = {
+  Content: MDXContent;
+  headings: Heading[];
+  /** Estimated reading time, in whole minutes. */
+  minutes: number;
+};
+
+export async function getBody(
+  kind: ContentKind,
+  slug: string,
+  locale: Locale,
+): Promise<Body> {
+  const [mod, source] = await Promise.all([
+    importers[kind](slug, locale),
+    readFile(path.join(contentRoot, kind, slug, `${locale}.mdx`), "utf8"),
+  ]);
+  return {
+    Content: mod.default,
+    headings: extractHeadings(source),
+    minutes: readingMinutes(source),
+  };
+}
 
 export async function getProjects(locale: Locale): Promise<Project[]> {
   const projects = await Promise.all(

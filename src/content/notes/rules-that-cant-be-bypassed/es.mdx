@@ -6,4 +6,46 @@ export const meta = {
   order: 3,
 };
 
-{/* La nota se escribe en la fase 4. */}
+{/* Usa material de Maderable, que es cliente: sin cifras. */}
+
+## Dónde vive una regla
+
+Toda regla de negocio termina en algún lugar: en un formulario que deshabilita un botón, en un método de servicio, en un constraint de la base de datos. No sostienen lo mismo. Una regla en la interfaz detiene a quien usa la interfaz. Una regla en un servicio detiene toda petición que pasa por ese método, hasta que alguien escribe un segundo método. Una regla en la base de datos lo detiene todo, incluido el script que alguien corre a medianoche.
+
+Por eso, cuando una regla importa, la pongo en el nivel más bajo que puede expresarla, y dejo que los niveles de arriba la repitan para la persona que usa la pantalla.
+
+## En la base de datos
+
+**El doble agendamiento, en la app del salón.** Revisar la agenda en Python y después escribir en ella deja una ventana: dos peticiones que leen antes de que cualquiera escriba pasan las dos. No es una carrera teórica: son dos personas confirmando el mismo horario en el mismo segundo. Un **constraint de exclusión** de PostgreSQL sobre el rango de tiempo de cada cita no tiene esa ventana. Solo participan los estados que ocupan la silla, y una marca explícita, que exige permiso, permite indicar que dos clientes pueden compartir una estación.
+
+**Motivos para el dinero que se mueve.** Un descuento sin motivo es un hueco sin explicación en la caja, así que la base de datos lo rechaza, y lo mismo pasa con un cargo extra. Un reembolso tiene que apuntar al pago que corrige, y un check constraint ata ese puntero al tipo de fila.
+
+## En la forma de los datos
+
+Algunas reglas se sostienen mejor con lo que el modelo de datos hace imposible de expresar.
+
+- **Los pagos son append-only.** Borrar uno se rechaza, y ninguna edición cambia su monto. Corregir dinero significa agregar un reembolso, así que la historia de la caja se puede leer, pero no reescribir.
+- **Los precios se congelan.** Una cita conserva el precio que tenían sus servicios al agendarse, y una orden de Maderable conserva un snapshot de su plano y sus precios. Un cambio de precio posterior no alcanza a ninguna de las dos.
+- **Los cambios de estado pasan por una sola puerta.** En la app del salón, una cita cambia de estado en un solo lugar, que escribe su historial y su evento de outbox en la misma transacción. No hay un segundo camino que pueda olvidar uno de los dos.
+
+## En el servicio, como respaldo
+
+Algunas reglas dependen de quién pregunta o de qué hora es, y esas viven en el servicio, en un solo lugar por el que pasa toda escritura.
+
+- **Cerrar las cuentas.** Después de que la persona propietaria cierra las cuentas hasta una fecha, nadie más puede escribir nada fechado en ese día o antes. La comparación se hace en la zona horaria del negocio, porque un pago de la noche en Ecuador ya pertenece al día siguiente en UTC.
+- **Piezas que no se pueden cortar.** En Maderable, una cotización con una pieza que el plano no pudo colocar era antes un aviso. Un aviso es información; se puede pasar por alto. Ahora la web bloquea el paso, y la API se niega de todas formas a guardar, enviar o confirmar la cotización. La interfaz es la primera barrera; la API es la que sostiene.
+- **Paralelo no es independiente.** Las actividades del taller corren en paralelo, pero el canteado no puede empezar antes de que se corte una pieza que lleva tapacanto, ni terminar antes de que se corten todas. Sin esas compuertas, una actividad podía declararse terminada sin trabajo detrás.
+
+## Guardas que se prueban rompiéndolas
+
+Un plano más barato no es lo mismo que un plano que se puede cortar. Cuando el optimizador de Maderable ganó una nueva forma de armar planos, también ganó una verificación de límites, kerf, solapes y rotación antes de adoptar un plano. Y el test de esa verificación **corrompe un plano a propósito**, porque una guarda que nunca se ve disparar no es una guarda.
+
+## Cuando la regla está en el código, pero el camino de la falla no
+
+El bug más instructivo de este tipo estuvo en Faclab. Una venta confirmada publica un evento, y un handler escribe los movimientos de stock. La regla estaba ahí. Pero el event bus **se tragaba las excepciones**: si fallaba la actualización del stock, la venta quedaba confirmada igual, y los datos se contradecían.
+
+La regla no se saltó por un chequeo que faltaba, sino por su camino de falla. El arreglo hizo que las fallas volvieran a propagarse y que toda la cadena —venta, movimientos, stock— compartiera una sola sesión de base de datos, para que se confirme o falle como una unidad.
+
+## La pregunta que hay que hacerse
+
+Para cada regla que importa, pregúntate: _¿existe algún camino —otro endpoint, un script, un reintento, una falla— que escriba datos sin pasar por ella?_ Si la respuesta es sí, la regla es una convención. El objetivo es volverla un hecho.

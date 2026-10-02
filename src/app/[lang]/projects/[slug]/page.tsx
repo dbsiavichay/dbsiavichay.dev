@@ -1,0 +1,179 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+
+import { ArticleBody } from "@/components/article/article-body";
+import {
+  ArticleHeader,
+  EyebrowRule,
+} from "@/components/article/article-header";
+import { NextLink } from "@/components/article/next-link";
+import { NoteList } from "@/components/article/note-list";
+import { Badge } from "@/components/ui/badge";
+import { Container } from "@/components/ui/container";
+import { PendingList } from "@/components/ui/pending";
+import { getI18n } from "@/i18n/server";
+import {
+  getBody,
+  getNotes,
+  getProject,
+  getProjects,
+  getSlugs,
+} from "@/lib/content";
+import { formatYearRange } from "@/lib/dates";
+import {
+  alternates,
+  articleJsonLd,
+  openGraph,
+  serializeJsonLd,
+} from "@/lib/seo";
+
+export function generateStaticParams() {
+  return getSlugs("projects").map((slug) => ({ slug }));
+}
+
+// Every case study is prerendered. Any other slug renders the localized 404
+// here rather than through `dynamicParams = false`, whose fall-through makes
+// the standalone server log an internal error for every unknown URL.
+async function resolveSlug(params: Promise<{ slug: string }>) {
+  const { slug } = await params;
+  if (!getSlugs("projects").includes(slug)) notFound();
+  return slug;
+}
+
+export async function generateMetadata({
+  params,
+}: PageProps<"/[lang]/projects/[slug]">): Promise<Metadata> {
+  const { locale, dict } = await getI18n();
+  const slug = await resolveSlug(params);
+  const project = await getProject(slug, locale);
+  const seo = {
+    title: `${project.title} — ${dict.meta.siteName}`,
+    description: project.summary,
+    path: `/projects/${slug}`,
+  };
+  return {
+    title: project.title,
+    description: project.summary,
+    alternates: alternates(locale, seo.path),
+    openGraph: openGraph(locale, seo, "article"),
+    twitter: {
+      card: "summary_large_image",
+      title: seo.title,
+      description: seo.description,
+    },
+  };
+}
+
+/** A case study: the problem, the decisions and their trade-offs, in MDX. */
+export default async function CaseStudyPage({
+  params,
+}: PageProps<"/[lang]/projects/[slug]">) {
+  const { locale, dict } = await getI18n();
+  const slug = await resolveSlug(params);
+  const [project, projects, notes, body] = await Promise.all([
+    getProject(slug, locale),
+    getProjects(locale),
+    getNotes(locale),
+    getBody("projects", slug, locale),
+  ]);
+  const t = dict.caseStudy;
+  const related = notes.filter((note) => note.projects.includes(slug));
+  const next =
+    projects[
+      (projects.findIndex((p) => p.slug === slug) + 1) % projects.length
+    ];
+  const jsonLd = articleJsonLd(
+    locale,
+    {
+      title: project.title,
+      description: project.summary,
+      path: `/projects/${slug}`,
+    },
+    dict.meta.siteName,
+  );
+  const { Content } = body;
+
+  return (
+    <article>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
+      />
+      <ArticleHeader
+        back={{ href: `/${locale}#work`, label: t.back }}
+        breadcrumbLabel={dict.article.breadcrumb}
+        eyebrow={
+          <>
+            <span className="text-accent-text">{t.eyebrow}</span>
+            <EyebrowRule />
+            <span>{dict.work.relation[project.relation]}</span>
+            <EyebrowRule />
+            <span>
+              {dict.article.readingTime.replace(
+                "{minutes}",
+                String(body.minutes),
+              )}
+            </span>
+          </>
+        }
+        title={project.title}
+        lede={project.tagline}
+      >
+        <dl className="mt-12 grid gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:mt-16">
+          <div className="bg-surface p-5">
+            <dt className="label-mono text-fg-subtle">{dict.work.role}</dt>
+            <dd className="mt-2 text-fg">{project.role}</dd>
+          </div>
+          <div className="bg-surface p-5">
+            <dt className="label-mono text-fg-subtle">{t.period}</dt>
+            <dd className="mt-2 font-mono text-fg">
+              {formatYearRange(
+                project.period.start,
+                project.period.end,
+                dict.common.present,
+              )}
+            </dd>
+          </div>
+          <div className="bg-surface p-5 sm:col-span-2">
+            <dt className="label-mono text-fg-subtle">{dict.work.stack}</dt>
+            <dd className="mt-3">
+              <ul className="flex flex-wrap gap-2">
+                {project.stack.map((item) => (
+                  <li key={item}>
+                    <Badge>{item}</Badge>
+                  </li>
+                ))}
+              </ul>
+            </dd>
+          </div>
+        </dl>
+        <PendingList values={project.unconfirmed} className="mt-6" />
+      </ArticleHeader>
+
+      <ArticleBody headings={body.headings} tocLabel={dict.article.onThisPage}>
+        <Content />
+      </ArticleBody>
+
+      <div className="border-t border-line py-section">
+        <Container>
+          {related.length > 0 ? (
+            <section aria-labelledby="related-title" className="mb-16 lg:mb-20">
+              <h2 id="related-title" className="mb-6 label-mono text-fg">
+                {t.relatedNotes}
+              </h2>
+              <NoteList notes={related} />
+            </section>
+          ) : null}
+          {next && next.slug !== slug ? (
+            <NextLink
+              label={t.next}
+              href={next.href}
+              title={next.title}
+              summary={next.tagline}
+            />
+          ) : null}
+        </Container>
+      </div>
+    </article>
+  );
+}

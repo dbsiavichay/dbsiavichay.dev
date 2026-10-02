@@ -27,4 +27,63 @@ export const meta = {
   unconfirmed: [pending("Faclab: is it in production, or used by customers?")],
 };
 
-{/* El case study se escribe en la fase 4. */}
+{/* Fuentes: el historial de git de los repositorios de Faclab. El uso en producción no está confirmado: no afirmar clientes. */}
+
+## El producto
+
+Faclab es mi producto propio: ventas, inventario, compras y punto de venta para negocios en Ecuador, con facturación electrónica del SRI. Lo construyo solo desde 2022: producto, arquitectura y código.
+
+Una factura electrónica en Ecuador no es un PDF. Es un documento XML con una clave de acceso con dígito verificador, firmado con el certificado de la empresa (XAdES-BES), enviado a los servicios SOAP del SRI para su validación, y solo es válido cuando el SRI lo autoriza. Cada paso puede fallar por su cuenta, contra un servicio que no controlo. Eso definió todo lo demás.
+
+## Cuatro años, cinco formas
+
+Faclab es también donde más cambié la arquitectura, y donde aprendí lo que cuesta cada cambio. El historial de git lo cuenta en orden:
+
+1. **Un monolito Django (2022).** Clientes, productos, ventas y compras en una sola aplicación. Las facturas se firmaban y se enviaban al SRI con una tarea de Celery.
+2. **Hexagonal, dentro del monolito (2024).** Casos de uso para la secuencia de facturas, el XML y la firma, con repositorios y adaptadores alrededor. El mismo desplegable, con límites más claros.
+3. **La firma como servicio (2024–2025).** La firma pasó a un servicio propio, que guardaba los certificados cifrados y sellaba documentos a pedido. El monolito borró su propio código de firma.
+4. **La facturación como servicio (2025).** Un servicio en TypeScript se hizo cargo de la factura: consumía un mensaje de Kafka cuando se facturaba una venta, llamaba de vuelta al core por HTTP para obtener los datos, pedía el sellado al servicio de firma y hablaba con el SRI. El core, por su parte, pasó a un nuevo código en FastAPI.
+5. **En parte de vuelta (2026).** El evento de venta empezó a llevar todo lo que necesita la factura, y la firma volvió a vivir dentro del servicio de facturación.
+
+El último paso deshizo parte de mi propio trabajo, a propósito. Lo conté en [Del monolito a servicios, y en parte de vuelta](/es/notes/monolith-to-services-and-back).
+
+## El core: Clean Architecture donde se justifica
+
+El core es el sistema de registro: catálogo, clientes, proveedores, compras, inventario con lotes y series, ventas y punto de venta. Está hecho con FastAPI y SQLAlchemy, en tres capas con dependencias en un solo sentido: el dominio no importa nada, la capa de aplicación depende solo del dominio, y la infraestructura implementa las interfaces que ambos declaran.
+
+- **CQRS:** cada escritura es un command handler y cada lectura, un query handler.
+- **Value objects** que validan al construirse: un identificador tributario es un RUC válido, el dinero lleva su moneda y un porcentaje es un porcentaje.
+- **Specifications** que se combinan con `&`, `|` y `~`, y que pueden evaluar una entidad en memoria o traducirse a un `WHERE` de SQL.
+- **Eventos de dominio** que conectan módulos: una venta confirmada escribe los movimientos de stock, y una orden de compra recibida ingresa stock.
+
+Ese último punto escondía el bug más instructivo del proyecto. El event bus **se tragaba las excepciones**: si fallaba la actualización del stock, la venta igual se confirmaba, y los datos se contradecían. El arreglo tuvo dos mitades: los errores vuelven a propagarse, y una cadena de handlers comparte una sola sesión de base de datos, así que la venta, sus movimientos y el stock se confirman o fallan juntos.
+
+<Aside label="Por qué aquí y no en todas partes">
+  Clean Architecture y CQRS tienen el peso justo para el core de Faclab: muchos
+  módulos, reglas que los cruzan y una vida larga por delante. Mis sistemas para
+  clientes, en cambio, están organizados en vertical slices, porque ahí la misma
+  ceremonia no compraría nada. La arquitectura sigue al problema.
+</Aside>
+
+## Facturación: una máquina de estados dirigida por eventos
+
+El servicio de facturación escucha `sales.confirmed`. Desde ahí, la factura recorre sus estados —creada, firmada, enviada, autorizada o rechazada— y **cada transición es un comando aislado**. El servicio publica el nuevo estado en su propio tópico `invoices` y lo vuelve a consumir para disparar el paso siguiente, así que cada paso puede fallar, reintentarse y observarse por separado.
+
+Las fallas se esperan, no son la excepción:
+
+- Un mensaje que falla se reintenta con backoff exponencial —1 s, 2 s, 4 s— y después pasa a una **dead-letter queue**.
+- Los offsets se confirman a mano, solo cuando el mensaje se procesó o quedó en la DLQ, así que nada se pierde si el proceso cae.
+- Toda entrada externa, de Kafka o de HTTP, se valida en el borde con Zod.
+- Las facturas y su estado viven en DynamoDB; los certificados de firma, en S3.
+
+Los detalles del SRI son código de dominio: la clave de acceso con su dígito verificador, el catálogo de códigos de impuesto y la fecha de la factura normalizada a la zona horaria de Ecuador.
+
+## Observabilidad a través de la cola
+
+Cada command y query handler del core abre un span de OpenTelemetry y registra cuántas veces corrió, cuánto tardó y si falló. El servicio de facturación traza su consumer y su producer de Kafka y sus llamadas SOAP, y correlaciona los logs con las trazas. Los dos lados llevan el **contexto de traza en los headers de los mensajes de Kafka**, así que una venta se puede seguir desde la petición HTTP que la confirmó hasta la respuesta del SRI. La telemetría va al collector OTLP que esté configurado. Más detalle en [Seguir una petición a través de Kafka](/es/notes/following-a-request-across-kafka).
+
+## Lecciones del historial
+
+- **Extrae por una razón que puedas nombrar.** La factura se ganó su propio servicio: es asíncrona por naturaleza, habla con un sistema externo con sus propias formas de fallar y avanza a su propio ritmo. La firma no: era un paso de la facturación que nadie más necesitaba.
+- **Una notificación que obliga a llamar de vuelta es medio evento.** Mientras el servicio de facturación tuvo que pedirle la venta al core, los dos tenían que estar arriba al mismo tiempo, y los datos podían cambiar entre una cosa y la otra. Llevar el estado en el evento eliminó los dos problemas.
+- **Volver a unir no es un fracaso.** Es el mismo criterio que separó el servicio, aplicado con más información.

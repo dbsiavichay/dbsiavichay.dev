@@ -6,4 +6,39 @@ export const meta = {
   order: 4,
 };
 
-{/* The note is written in phase 4. */}
+## One sale, many processes
+
+In Faclab, confirming a sale starts a journey that crosses several processes. An HTTP request reaches the core, where a command handler confirms the sale and in-process events write the stock movements. The core publishes `sales.confirmed` to Kafka. The invoicing service consumes it, creates the invoice, and then drives it through signing, sending and authorization by publishing each new state to its own topic and consuming it again. Two of those steps are SOAP calls to the tax authority.
+
+Without help, each of those is a separate story in the logs. When an invoice ends up rejected, the question is always the same — _which sale was this, and what happened on the way?_ — and the answer is scattered across two services and a queue.
+
+## Three signals, one context
+
+I instrumented both services with OpenTelemetry, and each signal answers a different question.
+
+**Traces** answer _what happened to this one sale_. In the core, the base class for command and query handlers opens a span for every execution, so no handler can forget to; publishing to Kafka gets its own span with the topic and the event type. In the invoicing service, HTTP and the AWS SDK are instrumented automatically, and the Kafka consumer, the producer and every SOAP call get spans of their own.
+
+**Metrics** answer _how is it going in general_. The core counts handler invocations and errors and records their duration, and counts the messages it sends to Kafka and the sends that fail. The invoicing service records how long each message takes to process, how many retries happened, how many messages went to the dead-letter queue and how long each SOAP call took — so a slow tax authority can be told apart from a slow service.
+
+**Logs** answer _what exactly did it say_. They're structured in both services, and every line written inside a span carries its trace and span ids. Requests also carry a request id, taken from the caller's `X-Request-ID` header when there is one.
+
+## Crossing the queue
+
+A trace normally lives inside one process. To cross Kafka, the context has to travel with the message:
+
+- **The producer injects it.** When the core sends a message, it writes the W3C trace context into the Kafka message headers.
+- **The consumer extracts it.** The invoicing service reads those headers and starts its processing span as a child of the producer's span, with the standard messaging attributes: system, topic, partition and offset.
+- **The state machine keeps it.** Every time the invoicing service publishes the invoice's next state to itself, it injects the context again, so signing, sending and authorization stay in the same trace as the sale that started them.
+- **The dead-letter queue keeps it too.** A message that exhausted its retries is parked with its context, so it can still be traced back to its origin.
+
+The result is one trace from the HTTP request that confirmed the sale to the tax authority's answer, across two services, two languages and a queue.
+
+## Collector-agnostic
+
+Neither service knows where its telemetry ends up. Both export over OTLP to an endpoint that comes from the environment. Changing the backend is configuration, not code.
+
+## Instrumentation is part of the design
+
+The invoicing service had OpenTelemetry early on. When I rewrote its structure — modules, commands, domain events, a composition root — the first step of the rewrite removed that instrumentation, and it came back at the end, on top of the new shape: traces, logs and metrics designed together, and the context carried through Kafka.
+
+That ordering is the point. Observability that's bolted on follows the code's accidents. Designed with the flow — handler, message, state, external call — it follows the business: one sale, followed to its invoice.

@@ -6,4 +6,48 @@ export const meta = {
   order: 2,
 };
 
-{/* La nota se escribe en la fase 4. */}
+## Dos migraciones
+
+En Jüsto participé en el paso de una plataforma de e-commerce de un sistema Django a microservicios, como un ingeniero más del equipo. En Faclab, mi producto propio, tomé el mismo tipo de decisiones solo, a lo largo de cuatro años, y tuve que vivir con cada una. El historial de git las guarda en orden, y eso lo vuelve un registro útil de lo que costó cada paso.
+
+## La secuencia
+
+1. **Un monolito Django.** Ventas, compras, inventario y facturación en un solo desplegable. Las facturas se firmaban y se enviaban al SRI con una tarea en segundo plano.
+2. **Hexagonal, dentro del monolito.** Casos de uso y repositorios, con adaptadores en los bordes. Se movieron los límites; el desplegable no.
+3. **Un servicio de firma.** Guardaba los certificados de firma, cifrados, y sellaba documentos a pedido.
+4. **Un servicio de facturación** en TypeScript, alimentado por Kafka. Recibía un mensaje cuando se facturaba una venta, llamaba de vuelta al core por HTTP para obtener los datos, le pedía el sello al servicio de firma y hablaba con el SRI.
+5. **En parte de vuelta.** El evento de venta empezó a llevar la venta completa, y la firma volvió a vivir dentro del servicio de facturación.
+
+El paso 2 fue el más barato de los cinco: trazar límites dentro de un solo desplegable es barato de probar y barato de deshacer. Todos los pasos siguientes cruzaron una red.
+
+## Lo que cuesta un límite de servicio
+
+En el papel, la firma es un servicio de libro: una interfaz angosta —entra un documento, sale un documento firmado— y un secreto que proteger. En la práctica, la separación agregó, en cada factura:
+
+- otra llamada por red, con sus propios timeouts y sus propias formas de fallar;
+- otro desplegable y otro almacén de datos que operar y respaldar;
+- la carga y el almacenamiento de certificados gestionados aparte de las facturas que los usan.
+
+Y compró poco a cambio. Nada aparte de la facturación necesitó jamás una firma, y cuando la firma fallaba, la factura fallaba con ella: no había una falla independiente que aislar. Un límite que no coincide con una razón para cambiar, ni con una forma de fallar por separado, es overhead.
+
+## Una notificación que obliga a llamar de vuelta
+
+La primera versión del servicio de facturación recibía un mensaje que decía, en esencia, _la venta 42 se facturó_, y después llamaba al core por HTTP para preguntar qué era la venta 42. Eso es una notificación, no un evento, y deshace en silencio casi todo lo que la cola debía aportar:
+
+- los dos servicios tenían que estar arriba al mismo tiempo, así que la cola ya no desacoplaba su disponibilidad;
+- la venta podía cambiar entre el mensaje y la llamada;
+- el core tenía que mantener un endpoint cuyo único cliente era otro servicio mío.
+
+El arreglo fue que el evento llevara el estado: la venta confirmada ahora incluye al cliente y cada línea —producto, cantidad, descuento, impuesto—, así que el consumidor hace su trabajo sin preguntarle a nadie. El precio es un mensaje más grande y un contrato que cuidar: el servicio de facturación valida cada mensaje en el borde, y el schema ahora es tanto una API como cualquier endpoint HTTP.
+
+## Volver a unir
+
+Con la venta llegando completa, el viaje de ida y vuelta que quedaba era el sello. Moví la firma dentro del servicio de facturación: el XML se firma localmente, el certificado se guarda junto al resto de los datos de facturación y la configuración fiscal de la empresa indica qué certificado usar. Un servicio menos, un salto menos por factura y nada perdido, porque nada más dependía de él.
+
+Volver a unir no es una retirada. Es el mismo criterio que creó el servicio, aplicado con más información.
+
+## La regla
+
+Extrae un servicio cuando puedas nombrar la razón en términos de **cambio** o de **falla**: cambia por otros motivos y a otro ritmo, o tiene que seguir funcionando cuando su vecino no. La facturación pasa esa prueba: es asíncrona por naturaleza y depende de una autoridad externa con sus propias fallas. La firma no la pasó.
+
+La granularidad correcta se descubre, y a veces el descubrimiento es que dos servicios eran uno.

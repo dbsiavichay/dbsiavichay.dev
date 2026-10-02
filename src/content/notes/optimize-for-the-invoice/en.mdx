@@ -6,4 +6,42 @@ export const meta = {
   order: 1,
 };
 
-{/* The note is written in phase 4. */}
+{/* From Maderable, a client: no figures, no benchmarks, no names of the shop's customers. */}
+
+## The textbook problem
+
+Two-dimensional cutting is a classic: given a list of rectangles and a sheet, place them so that as little of the sheet as possible is wasted. There are decades of heuristics for it, and if you open a paper on guillotine cutting, the objective is almost always the number of sheets or the waste.
+
+It's tempting to start there. For Maderable it would have been the wrong problem. The shop doesn't sell waste. It sells boards — and, for most materials, half boards. The question the seller has to answer while the customer waits is not "how efficient is this layout?" but "how much does this cost?".
+
+## The objective is on the invoice
+
+Once the objective became **the cost of the material the customer pays for**, several things that looked like details turned into the model:
+
+- **The half board is a bin, not a discount.** It has its own size and price, and the search considers it like any other sheet. My first version didn't: it packed whole boards and then checked whether a sheet's content happened to fit on a half. That pass can only ever rewrite a sheet whose content already fits; it can never move a piece to another sheet so that a half becomes possible. Only a search that sees the half as a bin from the start can do that.
+- **Offcuts are bins with a supply.** The shop's own offcuts are priced; the ones a customer brings cost the customer nothing, because the shop bills the cutting and the edge banding instead. A pool of offcuts is a finite set of differently sized bins, and the search treats it as one.
+- **A free bin breaks a lower bound.** The search stops early when its baseline already matches a lower bound on cost. But the moment any bin is free, the only valid cost bound is zero — and a baseline that costs nothing "matched" it. On a job cut entirely from the customer's offcuts, the whole search was being skipped, on exactly the job whose value is the packing. A cost bound of zero is not a proof; when cost can't decide, the bound falls back to the number of sheets.
+
+## When the stock runs out, cost can't answer
+
+Offcuts brought by a customer are finite. Sometimes not everything fits, and then "cheapest" stops being the question: the seller needs **the most that can be cut from what's there**, and the rest will come from a board the customer buys.
+
+That needed a different objective, and a careful one. Ranking plans by the number of pieces placed fills the offcuts with small pieces and strands the large ones — which then have to be cut from a board that's priced by area. So the yield pass ranks by **placed area first**. And orientation turned out to be a decision nobody was making: the packer always preferred one orientation, so a seller who allowed rotation hoping to fit more could get fewer. Revoking a permission is a strict restriction, so trying the same plan without rotation is always safe to add as a candidate.
+
+## Determinism is part of the price
+
+A quote is cached by a hash of its input, re-read every time the quote is opened, and frozen into an order when the customer confirms. If the same cut list could produce two different plans, the customer could confirm a price that the next reload contradicts. So determinism is a requirement, not a nicety:
+
+- No stopping rule uses the clock. Budgets are counted in work: candidates evaluated, restarts, rounds without improvement, the solver's deterministic time.
+- The engine has a version in the hash, bumped whenever the same input can produce different geometry.
+- "Generate another alternative" doesn't add randomness: it's a variant number that seeds the exploration order, and each variant is just as reproducible.
+
+## Additive by construction
+
+Every improvement I added — an exact solver for the endgame, a half board in the search, a new way to partition columns — is adopted only if it **bills strictly less and places every piece**. Otherwise the incumbent stays.
+
+That rule matters more than any single heuristic. Adding a cheaper bin to a bounded search is not free: the search keeps a limited number of partial plans, and a tempting new option can crowd out the plan that was right. So where that risk exists, both searches run and the cheaper bill wins. It makes each change safe by construction rather than by hoping the benchmarks caught everything — and engine changes are still measured against a battery of synthetic jobs and a corpus of the shop's real cut lists.
+
+## The lesson
+
+The objective function is a business decision. Before choosing an algorithm, I read the invoice: what the shop sells, in which units, at what price, and what the customer brings. The optimization followed from that — not the other way around.

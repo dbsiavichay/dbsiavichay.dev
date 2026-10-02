@@ -19,4 +19,24 @@ export const meta = {
   order: 4,
 };
 
-{/* El case study se escribe en la fase 4. */}
+## La institución
+
+El Municipio del cantón Morona, en Macas, Ecuador, llevaba buena parte de su trabajo en procesos manuales, junto a algunos sistemas que no se hablaban entre sí. Cada área —finanzas, talento humano, registro de la propiedad, agua potable, catastro, los trámites que la ciudadanía inicia en línea— tenía sus propios documentos, sus propias aprobaciones y sus propios datos.
+
+El SIM, Sistema Integrado Municipal, reunió esos procesos en un solo sistema con una sola base de datos. Trabajé en él de 2019 a 2021: primero como desarrollador y después liderando un equipo de tres. Soy uno de los dos principales contribuidores de su repositorio.
+
+## Qué hace
+
+- **Finanzas:** contabilidad, presupuestos y compras, con bodega y activos fijos.
+- **Talento humano:** empleados, nómina y ausencias, con las marcaciones leídas directamente de los relojes biométricos por la red.
+- **Servicios a la ciudadanía:** registro de la propiedad, agua potable, contribuyentes y trámites que se pueden iniciar en línea.
+
+El resultado: los datos de la institución pasaron a vivir en un solo lugar y las tareas repetitivas se automatizaron.
+
+## Cómo está construido
+
+- **Un proyecto Django, una app por área,** que comparten los registros centrales de la institución: empleados, contribuyentes, departamentos. Django REST Framework expone esos mismos modelos como API.
+- **Trámites como máquinas de estados.** Un trámite, una inscripción en el registro o un documento contable avanza por estados y transiciones explícitos (django-fsm): cada paso es una transición con nombre, no un campo que se edita.
+- **Trabajo en segundo plano con Celery,** para lo que no debe hacer esperar a un usuario.
+- **Piezas compartidas.** La capa de administración y la auditoría de cambios en los modelos vienen de dos paquetes míos, `django-superadmin` y `django-tracing`, publicados en PyPI; las versiones que usa el SIM se mantienen bajo el grupo del Municipio.
+- **Entrega con GitLab CI:** las ramas de staging y de release construyen una imagen Docker, la publican en el registry y la despliegan por SSH.

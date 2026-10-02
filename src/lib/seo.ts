@@ -43,9 +43,11 @@ type PageSeo = { title: string; description: string; path?: string };
 export function openGraph(
   locale: Locale,
   { title, description, path = "" }: PageSeo,
+  type: "website" | "article" = "website",
 ): NonNullable<Metadata["openGraph"]> {
   return {
-    type: "website",
+    type,
+    ...(type === "article" ? { authors: [profile.name] } : {}),
     siteName: profile.name,
     title,
     description,
@@ -100,6 +102,51 @@ export function profileJsonLd(locale: Locale, { title, description }: PageSeo) {
         inLanguage: localeTags[locale],
         isPartOf: { "@id": `${origin}/#website` },
         mainEntity: { "@id": person },
+      },
+    ],
+  };
+}
+
+/**
+ * Structured data for a case study or a note: the article, written by the
+ * person the home page describes, and where it sits in the site.
+ */
+export function articleJsonLd(
+  locale: Locale,
+  { title, description, path = "" }: PageSeo,
+  homeName: string,
+) {
+  const origin = env.SITE_URL;
+  const url = absoluteUrl(localePath(locale, path));
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "TechArticle",
+        "@id": `${url}#article`,
+        headline: title,
+        description,
+        url,
+        inLanguage: localeTags[locale],
+        author: {
+          "@type": "Person",
+          "@id": `${origin}/#person`,
+          name: profile.name,
+          url: origin,
+        },
+        isPartOf: { "@id": `${origin}/#website` },
+        mainEntityOfPage: url,
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { name: homeName, item: absoluteUrl(localePath(locale)) },
+          { name: title, item: url },
+        ].map((entry, i) => ({
+          "@type": "ListItem",
+          position: i + 1,
+          ...entry,
+        })),
       },
     ],
   };

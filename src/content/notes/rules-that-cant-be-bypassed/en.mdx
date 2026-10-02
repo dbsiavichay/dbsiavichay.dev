@@ -6,4 +6,46 @@ export const meta = {
   order: 3,
 };
 
-{/* The note is written in phase 4. */}
+{/* Draws on Maderable, a client: no figures. */}
+
+## Where a rule lives
+
+Every business rule ends up somewhere: in a form that disables a button, in a service method, in a database constraint. They don't hold equally. A rule in the interface stops a person who uses the interface. A rule in a service stops every request that goes through that method — until someone writes a second method. A rule in the database stops everything, including the script someone runs at midnight.
+
+So when a rule matters, I put it at the lowest level that can express it, and let the levels above repeat it for the sake of the person using the screen.
+
+## In the database
+
+**Double booking, in the salon app.** Checking the calendar in Python and then writing to it leaves a window: two requests that both read before either writes will both pass. That's not a theoretical race — it's two people confirming the same slot at the same second. A PostgreSQL **exclusion constraint** over each appointment's time range has no such window. Only the statuses that occupy the chair take part, and an explicit, permissioned flag lets someone say two clients can share a station.
+
+**Reasons for money that moves.** A discount without a reason is an unexplained hole in the till, so the database refuses it, and the same goes for an extra charge. A refund must point at the payment it corrects, and a check constraint ties that pointer to the kind of row.
+
+## In the shape of the data
+
+Some rules are better enforced by what the data model makes impossible to express.
+
+- **Payments are append-only.** Deleting one is refused, and no edit changes its amount. Correcting money means adding a refund, so the history of the till can be read but not rewritten.
+- **Prices are frozen.** An appointment keeps the price its services had when it was booked, and a Maderable order keeps a snapshot of its plan and its prices. A later price change can't reach either.
+- **State changes go through one door.** In the salon app, an appointment changes status in a single place, which writes its history and its outbox event in the same transaction. There is no second path that could forget one of them.
+
+## In the service, as the backstop
+
+Some rules depend on who is asking or on what time it is, and those live in the service — in one place every write goes through.
+
+- **Closing the books.** After the owner closes the books through a date, nobody else can write anything dated on or before it. The comparison happens in the business's time zone, because an evening payment in Ecuador already belongs to the next day in UTC.
+- **Pieces that can't be cut.** In Maderable, a quote with a piece the plan couldn't place used to be a warning. A warning is information; it can be missed. Now the web app blocks the step, and the API refuses to save, send or confirm the quote anyway. The interface is the first barrier, the API is the one that holds.
+- **Parallel is not independent.** The workshop's activities run in parallel, but banding can't start before a piece that needs banding has been cut, and can't finish before all of them have. Without those gates, an activity could be declared done with no work behind it.
+
+## Guards that are tested by breaking them
+
+A cheaper plan is not the same as a cuttable one. When Maderable's optimizer gained a new way to build plans, it also gained a check that verifies bounds, kerf, overlaps and rotation before a plan is adopted. And the test for that check **corrupts a plan on purpose**, because a guard you never see fire isn't a guard.
+
+## When the rule is in the code but the failure path isn't
+
+The most instructive bug of this kind was in Faclab. A confirmed sale publishes an event, and a handler writes the stock movements. The rule was there. But the event bus **swallowed exceptions**: if the stock update failed, the sale stayed confirmed, and the data disagreed with itself.
+
+The rule wasn't bypassed by a missing check; it was bypassed by its failure path. The fix made failures propagate again and made the whole chain — sale, movements, stock — share one database session, so it commits or fails as a unit.
+
+## The question to ask
+
+For each rule that matters, ask: _is there any path — another endpoint, a script, a retry, a failure — that writes data without passing through it?_ If the answer is yes, the rule is a convention. The goal is to make it a fact.

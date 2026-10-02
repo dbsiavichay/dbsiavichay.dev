@@ -32,4 +32,56 @@ export const meta = {
   ],
 };
 
-{/* El case study se escribe en la fase 4. */}
+## El negocio
+
+Un salón de belleza necesitaba un solo lugar para todo su día: la agenda, los clientes y su historial, los servicios y sus precios, el dinero que entra, el que sale y las fotos de antes y después. La aplicación está pensada primero para el teléfono.
+
+La construí solo en 2026: producto, API, aplicación web y el servidor donde está pensada para correr. Aquí no se nombra al salón, ni al producto, hasta que se confirme que se pueden publicar.
+
+## Reglas que viven donde nada puede saltarlas
+
+En un negocio pequeño nadie audita cada registro. Si el software permite que las cuentas se contradigan, el error aparece tarde, si es que aparece. Por eso las reglas que importan se aplican en el nivel más bajo que puede sostenerlas: la base de datos, o un único camino de código por el que pasa toda escritura.
+
+### Sin doble agendamiento, por construcción
+
+Dos citas no pueden compartir la silla. Un chequeo en Python leería la agenda y después escribiría en ella, y dos peticiones que leen antes de que cualquiera escriba pasarían las dos: justo lo que ocurre cuando dos personas confirman el mismo horario en el mismo segundo. Por eso la regla es un **constraint de exclusión de PostgreSQL con un índice GiST** sobre el rango de tiempo de cada cita. Solo participan los estados que de verdad ocupan la silla, y una cita puede excluirse de forma explícita, por alguien con permiso, para el caso raro en que dos clientes sí pueden compartir una estación.
+
+### Precios que no cambian después
+
+Cada cita **congela el precio de sus servicios** al agendarse. El catálogo guarda un historial continuo del precio de cada servicio: cambiarlo cierra el período vigente y abre uno nuevo, en una sola transacción, así que el precio de hoy nunca reescribe las citas ni los cobros pasados. Los descuentos y los cargos extra son montos absolutos, y la base de datos rechaza cualquiera de los dos si no trae un motivo.
+
+### El dinero se agrega, nunca se edita
+
+Los pagos son **append-only**. No hay borrado lógico, el borrado se rechaza, y editar un pago solo toca su referencia y su nota. Un error se corrige con un **reembolso**: una fila nueva que apunta al pago que corrige, y un check constraint mantiene ese puntero coherente con el tipo de fila. La caja es un libro contable, y un libro contable se lee, no se reescribe.
+
+### Cerrar las cuentas en la zona horaria correcta
+
+La persona propietaria puede cerrar las cuentas hasta una fecha, y desde entonces nadie más puede escribir nada fechado en ese día o antes. La comparación se hace en la **zona horaria del negocio**: las siete de la noche del 31, en Ecuador, ya son el día 1 en UTC, y un servidor que comparara en UTC mandaría los cobros de esa noche al mes equivocado. Por la misma razón, no se puede cerrar el día en curso.
+
+### Todo cambio de estado pasa por una sola puerta
+
+Una cita cambia de estado en un solo lugar, que escribe el historial de estados y un **evento de dominio en un outbox, en la misma transacción**. Nada consume el outbox todavía, y es a propósito: su valor es histórico. Un recordatorio o una automatización que se agregue el próximo año puede partir de eventos que se registraron desde siempre, pero nunca podría recuperar los que no se escribieron. Cada evento lleva un snapshot autocontenido, así que un consumidor que lo procese días después no depende del estado actual de la fila.
+
+Estas reglas, y las de mis otros proyectos, son el tema de [Reglas de negocio donde no se pueden saltar](/es/notes/rules-that-cant-be-bypassed).
+
+## La arquitectura que borré
+
+Empecé con la arquitectura de una plataforma: **multi-tenancy**, con un filtro global del ORM que inyectaba el tenant en cada consulta y fallaba cerrado; sucursales; y un roster de profesionales, cada uno con su semana y sus ausencias. Todo tenía tests y todo funcionaba.
+
+Después el negocio resultó ser un solo salón, donde la persona propietaria atiende todas las citas. El filtro de tenant, las sucursales y el roster no tenían quién los leyera: cada una de esas columnas guardaba siempre el mismo valor. Así que los retiré de punta a punta: tablas, claves foráneas, claims del token, reglas de login y scripts. El módulo de tenants pasó a ser una tabla `business` de una sola fila, con las configuraciones que algo realmente lee, y el constraint de solapamiento pasó de "por profesional" a "una silla".
+
+Esa decisión es el tema de [Eliminar la arquitectura que no hacía falta](/es/notes/deleting-the-architecture-you-didnt-need).
+
+## Detalles que la hacen usable
+
+- **Las fotos** se recodifican al subirse: se aplica la orientación, se descarta toda la metadata y se guardan dos versiones en lugar del original. Se sirven con **URLs firmadas que expiran**, firmadas con una clave derivada de la que firma las sesiones, no igual a ella, porque las URLs terminan pegadas en chats y en logs de acceso.
+- **Archivos antes que filas.** El archivo de una foto se escribe antes que su fila y se borra después. Los dos almacenes no pueden ser atómicos, así que el orden elige la falla que se puede sobrellevar: un archivo huérfano es basura que se recoge, una fila huérfana es una imagen rota en el perfil de un cliente.
+- **Un enlace de confirmación** permite que el cliente revise y confirme su cita sin una cuenta. Muestra cuándo y qué servicios, nunca precios, teléfonos ni notas, y deja de funcionar una semana después de la cita.
+- **La pantalla de inicio** responde las preguntas del día: quién vino hoy, quién no ha vuelto hace tiempo, los servicios más hechos y los cumpleaños que se acercan.
+
+## Operación en un VPS
+
+- **Un edge compartido.** Un solo Caddy, en su propio proyecto de Compose, es dueño de los puertos 80 y 443 y termina TLS para todos los sitios del servidor. Cada proyecto se une a una red externa `edge` con sus propios alias y agrega un archivo a los sitios del proxy; su base de datos nunca entra a esa red. Este portafolio está planeado para correr detrás del mismo edge.
+- **El servidor nunca compila.** GitHub Actions corre los tests, construye las imágenes y las publica en GHCR; el servidor solo las descarga. La SPA y la API comparten un solo origen.
+- **Los deploys hacen rollback.** El script de deploy espera a que el contenedor nuevo esté sano y, si no lo está, restaura el tag de la imagen anterior. Un rollback restaura la imagen, nunca el esquema, así que las migraciones se escriben en dos tiempos (expand y contract) y la imagen anterior sigue funcionando con el esquema nuevo.
+- **Los backups se ensayan.** Un dump programado y un simulacro de restauración que carga el más reciente en una base temporal, lo verifica y la elimina.

@@ -6,4 +6,39 @@ export const meta = {
   order: 4,
 };
 
-{/* La nota se escribe en la fase 4. */}
+## Una venta, muchos procesos
+
+En Faclab, confirmar una venta inicia un recorrido que cruza varios procesos. Una petición HTTP llega al core, donde un command handler confirma la venta y unos eventos internos escriben los movimientos de stock. El core publica `sales.confirmed` en Kafka. El servicio de facturación lo consume, crea la factura y después la lleva por la firma, el envío y la autorización, publicando cada nuevo estado en su propio tópico y consumiéndolo otra vez. Dos de esos pasos son llamadas SOAP al SRI.
+
+Sin ayuda, cada uno de esos pasos es una historia separada en los logs. Cuando una factura termina rechazada, la pregunta siempre es la misma —_¿qué venta era esta, y qué pasó en el camino?_— y la respuesta está repartida entre dos servicios y una cola.
+
+## Tres señales, un contexto
+
+Instrumenté los dos servicios con OpenTelemetry, y cada señal responde una pregunta distinta.
+
+**Las trazas** responden _qué le pasó a esta venta_. En el core, la clase base de los command y query handlers abre un span en cada ejecución, así que ningún handler puede olvidarlo; publicar en Kafka tiene su propio span, con el tópico y el tipo de evento. En el servicio de facturación, HTTP y el SDK de AWS se instrumentan automáticamente, y el consumer de Kafka, el producer y cada llamada SOAP tienen spans propios.
+
+**Las métricas** responden _cómo va todo en general_. El core cuenta las invocaciones y los errores de los handlers y registra su duración, y cuenta los mensajes que envía a Kafka y los envíos que fallan. El servicio de facturación registra cuánto tarda en procesar cada mensaje, cuántos reintentos hubo, cuántos mensajes fueron a la dead-letter queue y cuánto tardó cada llamada SOAP, así que un SRI lento se distingue de un servicio lento.
+
+**Los logs** responden _qué dijo exactamente_. Son estructurados en los dos servicios, y cada línea escrita dentro de un span lleva su trace id y su span id. Las peticiones llevan además un request id, que se toma del header `X-Request-ID` de quien llama cuando viene.
+
+## Cruzar la cola
+
+Una traza normalmente vive dentro de un proceso. Para cruzar Kafka, el contexto tiene que viajar con el mensaje:
+
+- **El producer lo inyecta.** Cuando el core envía un mensaje, escribe el contexto de traza W3C en los headers del mensaje de Kafka.
+- **El consumer lo extrae.** El servicio de facturación lee esos headers y abre su span de procesamiento como hijo del span del producer, con los atributos estándar de mensajería: sistema, tópico, partición y offset.
+- **La máquina de estados lo conserva.** Cada vez que el servicio de facturación se publica a sí mismo el siguiente estado de la factura, vuelve a inyectar el contexto, así que la firma, el envío y la autorización quedan en la misma traza que la venta que los inició.
+- **La dead-letter queue también lo conserva.** Un mensaje que agotó sus reintentos queda guardado con su contexto, así que todavía se puede rastrear hasta su origen.
+
+El resultado es una sola traza desde la petición HTTP que confirmó la venta hasta la respuesta del SRI, a través de dos servicios, dos lenguajes y una cola.
+
+## Independiente del collector
+
+Ningún servicio sabe dónde termina su telemetría. Los dos exportan por OTLP a un endpoint que viene del entorno. Cambiar de backend es configuración, no código.
+
+## La instrumentación es parte del diseño
+
+El servicio de facturación tuvo OpenTelemetry desde temprano. Cuando reescribí su estructura —módulos, comandos, eventos de dominio, una raíz de composición—, el primer paso de esa reescritura quitó esa instrumentación, y volvió al final, sobre la nueva forma: trazas, logs y métricas diseñados juntos, y el contexto viajando a través de Kafka.
+
+Ese orden es el punto. La observabilidad que se agrega encima sigue los accidentes del código. Diseñada junto con el flujo —handler, mensaje, estado, llamada externa—, sigue al negocio: una venta, seguida hasta su factura.

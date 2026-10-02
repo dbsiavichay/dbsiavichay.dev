@@ -6,4 +6,47 @@ export const meta = {
   order: 5,
 };
 
-{/* La nota se escribe en la fase 4. */}
+{/* El salón nunca se nombra, y el producto tampoco. */}
+
+## Construida para un futuro
+
+Diseñé la app del salón como un producto para muchos salones, y sus primeros commits lo muestran. Al principio tenía:
+
+- **Multi-tenancy**, hecha con cuidado: un listener global del ORM que inyectaba el tenant en cada consulta y **fallaba cerrado**, así que una consulta sin tenant en el contexto no devolvía nada. Los uniques y las claves foráneas llevaban el tenant, los emails eran únicos por tenant, y un login que coincidía con usuarios de dos tenants respondía con un error de ambigüedad.
+- **Sucursales**, asociadas al personal, las citas, los pagos y los gastos.
+- **Un roster de profesionales**, cada uno con su horario semanal y sus cierres. Cada cita, cada línea de servicio, cada franja de atención apuntaba a uno; el constraint de solapamiento era por profesional; la disponibilidad se calculaba por persona.
+
+Nada de eso estaba mal hecho. Tenía tests, y funcionaba.
+
+## Después llegó el negocio
+
+El negocio resultó ser un solo salón, donde la persona propietaria atiende todas las citas. En ese negocio:
+
+- la columna del tenant guardaba siempre el mismo valor;
+- la columna de la sucursal guardaba siempre el mismo valor;
+- la columna del profesional nombraba siempre a la misma persona.
+
+Una columna que guarda siempre el mismo valor no tiene quién la lea. Pero igual tiene un costo, y ese costo se pagaba en todas partes: en cada consulta que pasaba por el filtro, en cada clave compuesta, en el flujo de login, en el token, en los scripts y en cada funcionalidad nueva. La primera que escribía archivos tuvo que meter el tenant en sus URLs firmadas y abrir un scope de tenant para servir una foto.
+
+## Borrarla
+
+Así que la retiré de punta a punta, en dos cambios: uno para la multi-tenancy y las sucursales, otro para el roster.
+
+- El módulo de tenants pasó a ser una tabla `business` de una sola fila, con las configuraciones que algo realmente lee: zona horaria, moneda, tasa de impuesto, tamaño de los turnos y la fecha de cierre contable. Las configuraciones que nada leía se fueron con el resto.
+- El claim del tenant salió del token, el slug del tenant salió del login y el email pasó a ser único en toda la tabla.
+- El constraint de solapamiento pasó de "este profesional está ocupado" a "la silla está ocupada": un rango de tiempo, una silla.
+- La disponibilidad responde una lista plana de horarios libres en lugar de una lista por persona.
+
+Ningún entorno tenía datos reales todavía, así que las migraciones se reescribieron en su lugar, en vez de apilar una eliminación sobre un esquema que nadie iba a ejecutar. La suite de tests se achicó con el código: se fueron los tests que solo ejercitaban varios tenants o varios profesionales, y llegaron otros que cubren el negocio único.
+
+## Lo que se quedó, y por qué
+
+Borrar no fue una regla contra prepararse para el futuro. Algunas piezas pensadas a futuro se quedaron, porque la prueba no es _¿podríamos necesitar esto?_, sino _¿cuánto cuesta cargarlo ahora, frente a cuánto costaría agregarlo después?_
+
+- **El outbox se quedó.** Cada cambio de estado escribe un evento de dominio en la misma transacción, y nada los consume todavía. Cuesta un insert por transición. Su valor es histórico: un recordatorio o una automatización que se agregue el próximo año puede partir de eventos registrados desde siempre, pero nunca podría recuperar los que no se escribieron. Eso no se puede agregar después, así que vale la pena cargarlo.
+- **Los roles se quedaron.** Propietario, administrador y personal deciden quién puede cambiar un precio o tocar los cobros de una cita ya completada, y eso sigue importando con un solo salón.
+- **La multi-tenancy se fue.** Costaba algo en cada consulta, nadie la leía y, si el producto algún día sirve a un segundo salón, volver a agregarla es un cambio bien entendido, hecho con un segundo cliente real enfrente.
+
+## La lección
+
+La complejidad tiene que justificarse con un lector que existe —una consulta que necesita la columna, una persona que necesita la funcionalidad—, no con un futuro que podría llegar. Cuando ese futuro no llega, lo responsable con la arquitectura que construiste para él es borrarla, con cuidado y por completo.

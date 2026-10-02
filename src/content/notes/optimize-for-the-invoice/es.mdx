@@ -6,4 +6,42 @@ export const meta = {
   order: 1,
 };
 
-{/* La nota se escribe en la fase 4. */}
+{/* De Maderable, que es cliente: sin cifras, sin benchmarks, sin nombres de los clientes del taller. */}
+
+## El problema de libro
+
+El corte en dos dimensiones es un clásico: dada una lista de rectángulos y una lámina, acomodarlos para desperdiciar lo menos posible. Hay décadas de heurísticas para eso, y si abres un paper sobre corte en guillotina, el objetivo casi siempre es el número de láminas o el desperdicio.
+
+Es tentador empezar por ahí. Para Maderable habría sido el problema equivocado. El taller no vende desperdicio: vende tableros y, en la mayoría de los materiales, medios tableros. La pregunta que el vendedor tiene que responder mientras el cliente espera no es "¿qué tan eficiente es este plano?", sino "¿cuánto cuesta?".
+
+## El objetivo está en la factura
+
+Cuando el objetivo pasó a ser **el costo del material que paga el cliente**, varias cosas que parecían detalles se volvieron parte del modelo:
+
+- **El medio tablero es un bin, no un descuento.** Tiene su propio tamaño y su propio precio, y la búsqueda lo considera como a cualquier otra lámina. Mi primera versión no lo hacía: empacaba tableros enteros y después revisaba si el contenido de una lámina cabía por casualidad en un medio. Esa pasada solo puede reescribir una lámina cuyo contenido ya cabe; nunca puede mover una pieza a otra lámina para que un medio sea posible. Solo una búsqueda que ve el medio tablero como bin desde el principio puede hacerlo.
+- **Los retazos son bins con existencias.** Los retazos del taller tienen precio; los que trae el cliente no le cuestan nada, porque el taller cobra el corte y el canteado como servicios. Un pool de retazos es un conjunto finito de bins de distintos tamaños, y la búsqueda lo trata como tal.
+- **Un bin gratis rompe una cota inferior.** La búsqueda termina antes cuando su solución base ya alcanza una cota inferior de costo. Pero apenas un bin es gratis, la única cota de costo válida es cero, y una base que no cuesta nada la "alcanza". En un trabajo cortado entero sobre retazos del cliente, la búsqueda completa se saltaba, justo en el trabajo cuyo valor es el empaquetado. Una cota de costo cero no es una prueba; cuando el costo no puede decidir, la cota pasa a ser el número de láminas.
+
+## Cuando el material se acaba, el costo no responde
+
+Los retazos que trae un cliente son finitos. A veces no entra todo, y entonces "lo más barato" deja de ser la pregunta: el vendedor necesita **lo máximo que se puede cortar de lo que hay**, y el resto saldrá de un tablero que el cliente compra.
+
+Eso pedía otro objetivo, y uno cuidadoso. Ordenar los planos por cantidad de piezas colocadas llena los retazos con piezas pequeñas y deja fuera las grandes, que después hay que cortar de un tablero que se cobra por área. Por eso la pasada de rendimiento ordena **primero por área colocada**. Y la orientación resultó ser una decisión que nadie estaba tomando: el empaquetador siempre prefería una orientación, así que un vendedor que permitía rotar esperando que entraran más piezas podía terminar con menos. Quitar un permiso es una restricción estricta, así que probar el mismo plano sin rotación siempre se puede agregar como candidato sin riesgo.
+
+## El determinismo es parte del precio
+
+Una cotización se guarda en caché por un hash de su entrada, se vuelve a leer cada vez que se abre y se congela en una orden cuando el cliente la confirma. Si el mismo despiece pudiera producir dos planos distintos, el cliente podría confirmar un precio que la siguiente recarga contradice. Por eso el determinismo es un requisito, no un lujo:
+
+- Ningún criterio de parada usa el reloj. Los presupuestos se cuentan en trabajo: candidatos evaluados, reinicios, rondas sin mejora y el tiempo determinista del solver.
+- El motor tiene una versión dentro del hash, que cambia cada vez que la misma entrada puede producir otra geometría.
+- "Generar otra alternativa" no agrega azar: es un número de variante que siembra el orden de exploración, y cada variante es igual de reproducible.
+
+## Aditivo por construcción
+
+Cada mejora que agregué —un solver exacto para el cierre, el medio tablero dentro de la búsqueda, una nueva forma de particionar en columnas— se adopta solo si **factura estrictamente menos y coloca todas las piezas**. Si no, se queda el plano vigente.
+
+Esa regla importa más que cualquier heurística. Agregar un bin más barato a una búsqueda acotada no es gratis: la búsqueda conserva un número limitado de planes parciales, y una opción nueva y tentadora puede desplazar al plan que era correcto. Por eso, donde existe ese riesgo, corren las dos búsquedas y gana la factura más barata. Así cada cambio es seguro por construcción, no por la esperanza de que los benchmarks lo hayan atrapado todo; y los cambios del motor se siguen midiendo contra una batería de trabajos sintéticos y un corpus de despieces reales del taller.
+
+## La lección
+
+La función objetivo es una decisión de negocio. Antes de elegir un algoritmo, leo la factura: qué vende el taller, en qué unidades, a qué precio y qué trae el cliente. La optimización salió de ahí, no al revés.
