@@ -45,7 +45,7 @@ I built the system that does all of it: the API, the web app, the cutting optimi
 
 So the optimizer's objective is **the cost of the material the customer pays for**. The half board is a real bin with its own price, searched like any other, not a discount applied after the fact. I wrote that story up in [Optimize for the invoice, not the layout](/en/notes/optimize-for-the-invoice).
 
-<CutPlanFigure />
+<CutPlan />
 
 ## The constraints that shaped the model
 
@@ -89,6 +89,10 @@ The packer decides where pieces go; which order the saw runs in is a separate qu
 
 ## From quote to order
 
+A job crosses two state machines: the quote's, which stays live, and the order's, which is frozen. Step through both here; the details follow.
+
+<OrderPipeline />
+
 - **The quote is live.** While it's open, it re-optimizes on every read, so prices and layout follow the current catalog. Once confirmed, it shows exactly what its order froze.
 - **The customer reviews it on a link**, without an account: confirm, reject or ask for changes. The link is a random token, and only its hash is stored. Confirming creates the order.
 - **The order is an immutable snapshot** of the plan and its prices. A quote with a piece that can't be placed can't be saved, sent or confirmed: the web app blocks it first, and the API refuses it anyway.
@@ -108,6 +112,8 @@ Labels print themselves. A thin agent on the shop's Windows PC keeps an **outbou
 - **Data:** PostgreSQL, and Redis as the cache for optimization results.
 - **Web:** React and TypeScript.
 - **Delivery:** Docker Compose on a VPS behind Caddy. The SPA and the API share one origin, so there's no CORS and the frontend image works in any environment. GitHub Actions tests, builds and publishes the images; the server only pulls them. The deploy script waits for the new container to report healthy and restores the previous tag if it doesn't.
+
+<ArchitectureDiagram name="maderable" />
 
 ## Trade-offs, written down
 

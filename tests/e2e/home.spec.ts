@@ -83,8 +83,9 @@ test.describe("home", () => {
     );
     await context.grantPermissions(["clipboard-read", "clipboard-write"]);
     await page.goto("/en");
-    await page.getByRole("button", { name: "Copy email" }).click();
-    await expect(page.getByRole("status")).toHaveText(
+    const contact = page.locator("#contact");
+    await contact.getByRole("button", { name: "Copy email" }).click();
+    await expect(contact.getByRole("status")).toHaveText(
       "Email copied to the clipboard",
     );
     const copied = await page.evaluate(() => navigator.clipboard.readText());

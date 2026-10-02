@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { CommandMenu } from "@/components/command/command-menu";
+import { getCommands } from "@/components/command/get-commands";
 import { Container } from "@/components/ui/container";
 import { getI18n } from "@/i18n/server";
 
@@ -7,10 +9,14 @@ import { LocaleSwitch } from "./locale-switch";
 import { MobileMenu } from "./mobile-menu";
 import { getNavItems } from "./nav-items";
 
-/** Sticky site header. Server-rendered; only the menu toggle and language switch hydrate. */
+/**
+ * Sticky site header. Server-rendered; only the search, the menu toggle and
+ * the language switch hydrate.
+ */
 export async function Navbar() {
   const { locale, dict } = await getI18n();
   const items = getNavItems(locale, dict);
+  const commands = await getCommands(locale, dict);
 
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-canvas">
@@ -50,6 +56,11 @@ export async function Navbar() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <CommandMenu
+            commands={commands}
+            labels={dict.command}
+            copiedLabel={dict.contact.copied}
+          />
           <LocaleSwitch current={locale} label={dict.a11y.languageSwitcher} />
           <MobileMenu
             items={items}

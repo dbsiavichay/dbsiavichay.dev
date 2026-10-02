@@ -22,6 +22,8 @@ Once the objective became **the cost of the material the customer pays for**, se
 - **Offcuts are bins with a supply.** The shop's own offcuts are priced; the ones a customer brings cost the customer nothing, because the shop bills the cutting and the edge banding instead. A pool of offcuts is a finite set of differently sized bins, and the search treats it as one.
 - **A free bin breaks a lower bound.** The search stops early when its baseline already matches a lower bound on cost. But the moment any bin is free, the only valid cost bound is zero — and a baseline that costs nothing "matched" it. On a job cut entirely from the customer's offcuts, the whole search was being skipped, on exactly the job whose value is the packing. A cost bound of zero is not a proof; when cost can't decide, the bound falls back to the number of sheets.
 
+<CutPlan />
+
 ## When the stock runs out, cost can't answer
 
 Offcuts brought by a customer are finite. Sometimes not everything fits, and then "cheapest" stops being the question: the seller needs **the most that can be cut from what's there**, and the rest will come from a board the customer buys.

@@ -6,15 +6,21 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
 import { navSections } from "@/components/navigation/nav-items";
+import { diagrams } from "@/data/diagrams";
 import { locales, type Locale } from "@/i18n/config";
 import { contentKinds, getSlugs, type ContentKind } from "@/lib/content";
 import { extractBody, extractHeadings } from "@/lib/mdx-source";
 // Aliased: despite its name it is a plain function, not a hook.
 import { useMDXComponents as mdxComponents } from "@/mdx-components";
 
-// The figure reads the locale from the route, which only exists inside Next.
-vi.mock("@/components/mdx/cut-plan-figure", () => ({
-  CutPlanFigure: () => null,
+// These figures read the locale from the route, which only exists inside
+// Next. Their content is tested on its own.
+vi.mock("@/components/mdx/architecture-diagram", () => ({
+  ArchitectureDiagram: () => null,
+}));
+vi.mock("@/components/mdx/cut-plan", () => ({ CutPlan: () => null }));
+vi.mock("@/components/mdx/order-pipeline", () => ({
+  OrderPipeline: () => null,
 }));
 
 const root = path.join(process.cwd(), "src", "content");
@@ -86,6 +92,17 @@ describe.each(entries)("$kind/$slug", ({ kind, slug }) => {
       }
       expect(contentKinds, href).toContain(section);
       expect(getSlugs(section as ContentKind), href).toContain(target);
+    }
+  });
+
+  it("names only diagrams that exist", () => {
+    for (const locale of locales) {
+      const body = extractBody(sourceOf(kind, slug, locale));
+      for (const [, name] of body.matchAll(
+        /<ArchitectureDiagram name="([^"]+)"/g,
+      )) {
+        expect(Object.keys(diagrams), `${locale}.mdx`).toContain(name);
+      }
     }
   });
 
