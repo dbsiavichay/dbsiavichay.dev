@@ -31,4 +31,92 @@ export const meta = {
   ],
 };
 
-{/* The case study is written in phase 4. */}
+{/* Maderable is a client: architecture yes, figures and benchmarks no. Never name the shop's customers or its existing inventory system. */}
+
+## The shop
+
+Maderable sells melamine boards in Ecuador and cuts them to measure. A customer arrives with a cut list — the pieces of a wardrobe, a kitchen, a TV unit — and the seller has to answer _how much?_ while the customer waits. If the answer is yes, that list has to reach the saw, the edge-banding machine and dispatch without anyone typing it again.
+
+I built the system that does all of it: the API, the web app, the cutting optimizer, an agent that prints labels on the shop's printers, and the infrastructure it runs on. I'm the only engineer on it, from the domain model to the deploy.
+
+## The problem was the price, not the layout
+
+"Cut optimization" usually means placing rectangles on a sheet with as little waste as possible. That isn't what the shop needed. The shop doesn't sell waste: it sells boards, and half boards. Two layouts with the same waste can cost the customer different amounts, and a layout that wastes more can be cheaper if it finishes on a half board.
+
+So the optimizer's objective is **the cost of the material the customer pays for**. The half board is a real bin with its own price, searched like any other, not a discount applied after the fact. I wrote that story up in [Optimize for the invoice, not the layout](/en/notes/optimize-for-the-invoice).
+
+<CutPlanFigure />
+
+## The constraints that shaped the model
+
+Every one of these is a rule the shop already worked by. The model had to speak them, not approximate them.
+
+- **Kerf and trim.** Every cut consumes the width of the saw blade, and board edges are trimmed square before cutting.
+- **Grain.** The grain decides whether a piece may rotate.
+- **The half board.** It's a unit of sale, but not for every material, and not every material splits along the same side. The rule is derived from the material type the shop's inventory already records, so it maintains itself.
+- **Offcuts.** The shop's own, and the ones customers bring. They are finite: when the stock runs out, the question stops being "what's cheapest" and becomes "what's the most I can cut from this".
+- **Edge banding** on each side of each piece, and **additional services** the workshop performs.
+- **An existing inventory system** that can only be read. The catalog and the clients sync from it; nothing is ever written back.
+
+## The optimizer
+
+The cutting engine is a package with no framework imports: it receives geometry and prices, and returns cutting layouts. Everything else in the API is organized around the business; this part is isolated because it's the part that earns it.
+
+### Search, in layers
+
+The saw makes guillotine cuts, edge to edge, so every layout is a guillotine layout. The search starts from a fast greedy baseline and, unless that baseline already reaches the cost lower bound, improves it in layers:
+
+1. **Beam search over partitions:** for each board it evaluates a portfolio of candidate fills, from greedy packings to strip patterns, and keeps the most promising partial plans.
+2. **An endgame probe** that closes "a few boards plus a handful of orphan pieces" the moment the tail fits in one more bin.
+3. **Large neighborhood search:** ruin the worst boards and search their pieces again.
+4. **An exact model** with OR-Tools CP-SAT for the questions the heuristics answer badly, such as _does this tail fit in one more board?_ Its feasible answers are built into real cuts; a "no" from a capped model is never taken as proof of anything.
+
+Every layer is **additive by construction**: a candidate replaces the incumbent only if it bills strictly less and places every piece. That rule is what lets me add a strategy without fearing that it makes some other job worse.
+
+### Deterministic by design
+
+Results are cached by a hash of the request, so the same cut list must always produce the same plan — on any day, on any machine. That makes wall-clock time unusable as a stopping rule. Every budget is counted in units of work instead: candidate fills, restarts, rounds without improvement, and the solver's deterministic time. An engine version is part of the hash and moves whenever the same input can produce new geometry, so a stale result is never served.
+
+Determinism also had to survive the solver. The same pinned version of CP-SAT returned different, equally optimal packings on different platforms, and production billed differently from a laptop. The fix was not more search: the layout is rebuilt canonically from the solver's content, so tied optima collapse onto one answer.
+
+### A Rust kernel with a Python oracle
+
+The packing hot loop is ported to Rust (PyO3 and maturin). The Python implementation stays as the **reference and the fallback**, and the port must return exactly the same placements, leftovers and cuts — so the backend doesn't even enter the cache key. The boundary sits where the engine asks for a batch of candidate fills, so crossing from Python to Rust happens rarely. And because a missing native wheel used to fall back silently, the API now reports which backend actually runs and logs a warning when it isn't the one requested.
+
+### The order of the cuts
+
+The packer decides where pieces go; which order the saw runs in is a separate question. A final pass searches the guillotine trees that realize the same placements and keeps the one whose leftovers are most usable: more usable area, in fewer and larger offcuts. It can't change the price, by construction, which is why it runs on every board.
+
+## From quote to order
+
+- **The quote is live.** While it's open, it re-optimizes on every read, so prices and layout follow the current catalog. Once confirmed, it shows exactly what its order froze.
+- **The customer reviews it on a link**, without an account: confirm, reject or ask for changes. The link is a random token, and only its hash is stored. Confirming creates the order.
+- **The order is an immutable snapshot** of the plan and its prices. A quote with a piece that can't be placed can't be saved, sent or confirmed: the web app blocks it first, and the API refuses it anyway.
+- **The seller can rearrange a plan by hand**, and **the server decides what is valid**. Placements are the truth of a board; the cut tree is derived from them, and if no guillotine tree exists, the board can't be cut. Two primitives — remove a piece, place a piece — reach every valid plan through valid states.
+
+## The workshop floor
+
+The order moves through `confirmed → queued → in_process → finished → dispatched`. Entering the queue requires the payment method and the invoice number, because that's the moment the sale is charged.
+
+`in_process` is an umbrella over three **parallel activities** — cutting, edge banding and additional work — each with its own status, person and clock, and the order's status is derived from them. Parallel isn't independent, though: banding can't start until a piece that needs banding has been cut, and can't finish until every one of them has. Those gates are measured per activity, against its own set of pieces. The roles follow the shop: the operator cuts, the edge bander bands, only an administrator or a seller dispatches, and cancelling an order that was already paid takes an administrator and a written reason.
+
+Labels print themselves. A thin agent on the shop's Windows PC keeps an **outbound long-poll** to the API, downloads what the backend rendered, prints it and acknowledges it. Delivery is at least once: a duplicate label is acceptable, a lost one isn't. The agent only makes outbound requests, so the shop's network opens nothing.
+
+## Architecture
+
+- **API:** FastAPI organized in **vertical slices** — each resource owns its router, service, schemas and model — with a generic CRUD base and a single error pipeline. No use-case layer per entity: the code a resource needs lives in one folder.
+- **Data:** PostgreSQL, and Redis as the cache for optimization results.
+- **Web:** React and TypeScript.
+- **Delivery:** Docker Compose on a VPS behind Caddy. The SPA and the API share one origin, so there's no CORS and the frontend image works in any environment. GitHub Actions tests, builds and publishes the images; the server only pulls them. The deploy script waits for the new container to report healthy and restores the previous tag if it doesn't.
+
+## Trade-offs, written down
+
+<Aside label="Trade-off">
+  The exact solver wins boards, but it's also where most of the time goes. I
+  metered it — separate work budgets for deciding and for optimizing, and a
+  cutoff after rounds that improve nothing — and took the trade on purpose: a
+  seller quoting with the customer in front of them is worth more than an
+  occasional saving on a rare job.
+</Aside>
+
+The live quote has a known gap, written down rather than hidden. If the cached plan expires and a deploy changes the engine between the moment the customer sees a quote and the moment they confirm it, the order freezes the new plan, not the one they saw. Freezing a snapshot when the quote is sent would close it. I chose not to, for now: it costs a migration, and it means honoring the sent price for the quote's whole validity.

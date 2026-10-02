@@ -1,7 +1,15 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
-const routes = ["/en", "/es", "/en/not-a-page"];
+const routes = [
+  "/en",
+  "/es",
+  "/en/projects/maderable",
+  "/es/projects/salon",
+  "/en/notes/following-a-request-across-kafka",
+  "/es/notes/rules-that-cant-be-bypassed",
+  "/en/not-a-page",
+];
 
 test.describe("accessibility", () => {
   for (const route of routes) {
@@ -39,6 +47,14 @@ test.describe("accessibility", () => {
 // screenshots; the hard rule enforced here is "no horizontal scrolling".
 const widths = [320, 375, 390, 430, 768, 1024, 1440, 1920];
 
+// The home in both languages, and one page of each long-form kind.
+const layoutPaths = [
+  "/en",
+  "/es",
+  "/en/projects/maderable",
+  "/es/notes/monolith-to-services-and-back",
+];
+
 test.describe("responsive layout", () => {
   test.skip(
     ({ isMobile }) => isMobile,
@@ -48,18 +64,21 @@ test.describe("responsive layout", () => {
   for (const width of widths) {
     test(`no horizontal overflow at ${width}px`, async ({ page }, testInfo) => {
       await page.setViewportSize({ width, height: 900 });
-      for (const locale of ["en", "es"]) {
-        await page.goto(`/${locale}`);
+      for (const path of layoutPaths) {
+        await page.goto(path);
         const overflow = await page.evaluate(
           () =>
             document.documentElement.scrollWidth -
             document.documentElement.clientWidth,
         );
-        expect(overflow, `/${locale} at ${width}px`).toBeLessThanOrEqual(0);
-        await testInfo.attach(`${locale}-${width}.png`, {
-          body: await page.screenshot({ fullPage: true }),
-          contentType: "image/png",
-        });
+        expect(overflow, `${path} at ${width}px`).toBeLessThanOrEqual(0);
+        await testInfo.attach(
+          `${path.slice(1).replaceAll("/", "-")}-${width}.png`,
+          {
+            body: await page.screenshot({ fullPage: true }),
+            contentType: "image/png",
+          },
+        );
       }
     });
   }

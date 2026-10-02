@@ -143,6 +143,24 @@ export const en = {
     builtWith: "Built with Next.js and prerendered.",
     backToTop: "Back to top",
   },
+  article: {
+    breadcrumb: "Breadcrumb",
+    onThisPage: "On this page",
+    readingTime: "{minutes} min read",
+  },
+  caseStudy: {
+    eyebrow: "Case study",
+    back: "Selected work",
+    period: "Period",
+    relatedNotes: "Notes from this project",
+    next: "Next case study",
+  },
+  note: {
+    eyebrow: "Engineering note",
+    back: "Engineering notes",
+    caseStudies: "The case studies behind this note",
+    next: "Next note",
+  },
   notFound: {
     title: "This page doesn't exist.",
     body: "The link may be outdated or mistyped.",

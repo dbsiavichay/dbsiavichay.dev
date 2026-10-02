@@ -6,4 +6,47 @@ export const meta = {
   order: 5,
 };
 
-{/* The note is written in phase 4. */}
+{/* The salon is never named, and neither is the product. */}
+
+## Built for a future
+
+I designed the salon app as a product for many salons, and its first commits showed it. Early on, it had:
+
+- **Multi-tenancy**, done carefully: a global ORM listener that injected the tenant into every query and **failed closed**, so a query with no tenant in context returned nothing. Uniques and foreign keys carried the tenant, emails were unique per tenant, and a login that matched users in two tenants answered with an ambiguity error.
+- **Branches**, attached to staff, appointments, payments and expenses.
+- **A roster of professionals**, each with their own weekly hours and closures. Every appointment, every service line, every opening window pointed at one; the overlap constraint was per professional; availability was computed per person.
+
+None of it was sloppy. It was tested, and it worked.
+
+## Then the business arrived
+
+The business turned out to be one salon, where the owner attends every appointment. In that business:
+
+- the tenant column always held the same value;
+- the branch column always held the same value;
+- the professional column always named the same person.
+
+A column that always holds the same value has no reader. But it still has a cost, and that cost was being paid everywhere: on every query that went through the filter, in every composite key, in the login flow, in the token, in the scripts, and in every new feature — the first feature that wrote files had to put the tenant into its signed URLs and open a tenant scope to serve a photo.
+
+## Deleting it
+
+So I removed it, end to end, in two changes: one for tenancy and branches, one for the roster.
+
+- The tenant module became a single-row `business` table holding the settings something actually reads: time zone, currency, tax rate, slot size and the accounting cutoff. Settings nothing read went with the rest.
+- The tenant claim left the token, the tenant slug left the login, and email became unique across the whole table.
+- The overlap constraint went from "this professional is busy" to "the chair is busy": one time range, one chair.
+- Availability answers a flat list of free slots instead of one list per person.
+
+No environment held real data yet, so the migrations were rewritten in place rather than stacking a removal on top of a schema nobody would ever run. The test suite shrank with the code: the tests that only exercised several tenants or several professionals went, and new ones covered the single business.
+
+## What stayed, and why
+
+Deleting wasn't a rule against preparing for the future. Some forward-looking pieces stayed, because the test isn't _might we need this?_ but _what does it cost to carry now, against what it would cost to add later?_
+
+- **The outbox stayed.** Every state change writes a domain event in the same transaction, and nothing consumes them yet. It costs one insert per transition. Its value is historical: a reminder or an automation added next year can start from events recorded all along, but it could never recover the ones that weren't written. That can't be retrofitted, so it's worth carrying.
+- **Roles stayed.** Owner, manager and staff decide who may change a price or touch a completed appointment's charges, and that still matters with one salon.
+- **Tenancy went.** It cost something on every query, nobody read it, and if the product ever serves a second salon, adding it back is a well-understood change made with a real second customer in front of me.
+
+## The lesson
+
+Complexity has to be justified by a reader that exists — a query that needs the column, a person who needs the feature — not by a future that might arrive. When the future doesn't arrive, the responsible thing to do with the architecture you built for it is to delete it, carefully and completely.

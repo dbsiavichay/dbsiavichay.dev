@@ -27,4 +27,63 @@ export const meta = {
   unconfirmed: [pending("Faclab: is it in production, or used by customers?")],
 };
 
-{/* The case study is written in phase 4. */}
+{/* Sources: the git history of the Faclab repositories. Production use is unconfirmed: don't claim customers. */}
+
+## The product
+
+Faclab is my own product: sales, inventory, purchasing and a point of sale for businesses in Ecuador, with electronic invoicing for the tax authority, the SRI. I've built it alone since 2022 — product, architecture and code.
+
+An electronic invoice in Ecuador isn't a PDF. It's an XML document with a check-digit access code, signed with the company's certificate (XAdES-BES), sent to the SRI's SOAP services for validation, and only valid once the SRI authorizes it. Each step can fail on its own, against a service I don't control. That shaped everything else.
+
+## Four years, five shapes
+
+Faclab is also where I changed the architecture the most, and where I learned what each change costs. The git history tells it in order:
+
+1. **A Django monolith (2022).** Customers, products, sales and purchases in one app. Invoices were signed and sent to the SRI by a Celery task.
+2. **Hexagonal, inside the monolith (2024).** Use cases for the invoice sequence, the XML and the signature; repositories and adapters around them. Same deployable, clearer boundaries.
+3. **Signing as a service (2024–2025).** Signing moved to its own service, which kept the certificates encrypted and sealed documents on request. The monolith deleted its own signing code.
+4. **Invoicing as a service (2025).** A TypeScript service took over the invoice: it consumed a Kafka message when a sale was invoiced, called the core back over HTTP to fetch the data, had the signing service seal it, and talked to the SRI. The core itself moved to a new FastAPI codebase.
+5. **Partly back (2026).** The sale event started carrying everything the invoice needs, and signing moved back inside the invoicing service.
+
+The last step undid part of my own work, on purpose. I wrote it up in [From monolith to services — and partly back](/en/notes/monolith-to-services-and-back).
+
+## The core: Clean Architecture where it pays
+
+The core is the system of record: catalog, customers, suppliers, purchasing, inventory with lots and serials, sales and the point of sale. It's FastAPI and SQLAlchemy, organized in three layers with one-way dependencies: the domain imports nothing, the application layer depends only on the domain, and infrastructure implements the interfaces both declare.
+
+- **CQRS:** every write is a command handler, every read a query handler.
+- **Value objects** validate on construction: a tax ID is a valid RUC, money carries its currency, a percentage is a percentage.
+- **Specifications** compose with `&`, `|` and `~`, and each one can both test an entity in memory and translate itself into a SQL `WHERE`.
+- **Domain events** connect modules: a confirmed sale writes the stock movements, a received purchase order brings stock in.
+
+That last point hid the most instructive bug in the project. The event bus **swallowed exceptions**: if updating stock failed, the sale still confirmed, and the data disagreed with itself. The fix had two halves — errors propagate again, and a chain of handlers shares one database session, so the sale, its movements and the stock commit or fail together.
+
+<Aside label="Why here and not everywhere">
+  Clean Architecture and CQRS are the right weight for Faclab's core: many
+  modules, rules that cross them, and a long life ahead. My client systems are
+  organized in vertical slices instead, because there the same ceremony would
+  buy nothing. The architecture follows the problem.
+</Aside>
+
+## Invoicing: a state machine driven by events
+
+The invoicing service listens to `sales.confirmed`. From there, the invoice walks through its states — created, signed, sent, authorized, or rejected — and **each transition is an isolated command**. The service publishes the new state to its own `invoices` topic and consumes it again to trigger the next step, so each step can fail, be retried and be observed on its own.
+
+Failures are expected, not exceptional:
+
+- A message that fails is retried with exponential backoff — 1 s, 2 s, 4 s — and then routed to a **dead-letter queue**.
+- Offsets are committed by hand, only after a message was processed or parked in the DLQ, so nothing is lost on a crash.
+- Every input from outside, Kafka or HTTP, is validated at the boundary with Zod.
+- Invoices and their state live in DynamoDB; signing certificates in S3.
+
+The SRI's details are domain code: the access code with its check digit, the catalog of tax codes, and the invoice date normalized to Ecuador's time zone.
+
+## Observability across the queue
+
+Every command and query handler in the core opens an OpenTelemetry span and records how many times it ran, how long it took and whether it failed. The invoicing service traces its Kafka consumer and producer and its SOAP calls, and correlates logs with traces. Both sides carry the **trace context in the Kafka message headers**, so one sale can be followed from the HTTP request that confirmed it to the SRI's answer. Telemetry goes to whatever OTLP collector is configured. More in [Following a request across Kafka](/en/notes/following-a-request-across-kafka).
+
+## Lessons from the history
+
+- **Extract for a reason you can name.** The invoice earned its own service: it's asynchronous by nature, talks to an external system with its own failure modes, and runs at its own pace. The signature didn't: it was one step of invoicing that nobody else needed.
+- **A notification that forces a callback is half an event.** As long as the invoicing service had to ask the core for the sale, the two had to be up at the same time, and the data could change in between. Carrying the state in the event removed both problems.
+- **Merging back is not a failure.** It's the same judgment that split the service, applied with more information.

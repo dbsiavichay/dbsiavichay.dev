@@ -19,4 +19,24 @@ export const meta = {
   order: 4,
 };
 
-{/* The case study is written in phase 4. */}
+## The institution
+
+The Municipality of Morona, in Macas, Ecuador, ran much of its work as manual processes, alongside a few systems that didn't talk to each other. Each area — finance, human resources, the property registry, drinking water, the cadastre, the procedures citizens start online — had its own documents, its own approvals and its own data.
+
+SIM, the Integrated Municipal System, brought those processes together into one system with one database. I worked on it from 2019 to 2021: first as a developer, then leading a team of three. I'm one of the two main contributors to its repository.
+
+## What it does
+
+- **Finance:** accounting, budgets and purchasing, with a warehouse and fixed assets.
+- **Human resources:** employees, payroll and absences, with attendance read directly from the biometric clocks over the network.
+- **Services to citizens:** the property registry, drinking water, taxpayers and procedures that can be started online.
+
+The result: the institution's data lived in one place, and repetitive tasks were automated.
+
+## How it's built
+
+- **One Django project, an app per area,** sharing the institution's core records — employees, taxpayers, departments. Django REST Framework exposes the same models as an API.
+- **Procedures as state machines.** A procedure, a registry entry or an accounting document moves through explicit states and transitions (django-fsm): each step is a named transition, not an edited field.
+- **Background work with Celery,** for what shouldn't keep a user waiting.
+- **Shared building blocks.** The admin layer and the auditing of model changes come from two packages of mine, `django-superadmin` and `django-tracing`, published on PyPI; the versions SIM uses are maintained under the municipality's group.
+- **Delivery with GitLab CI:** the staging and release branches build a Docker image, push it to the registry and roll it out over SSH.

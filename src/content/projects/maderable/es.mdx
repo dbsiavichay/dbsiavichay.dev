@@ -32,4 +32,92 @@ export const meta = {
   ],
 };
 
-{/* El case study se escribe en la fase 4. */}
+{/* Maderable es cliente: la arquitectura sí, las cifras y los benchmarks no. Nunca nombrar a los clientes del taller ni a su sistema de inventario existente. */}
+
+## El taller
+
+Maderable vende tableros de melamina en Ecuador y los corta a medida. Un cliente llega con su despiece —las piezas de un clóset, una cocina, un mueble de TV— y el vendedor tiene que responder _¿cuánto cuesta?_ mientras el cliente espera. Si la respuesta es sí, ese despiece tiene que llegar a la sierra, a la canteadora y al despacho sin que nadie lo vuelva a escribir.
+
+Construí el sistema que hace todo eso: la API, la aplicación web, el optimizador de corte, un agente que imprime etiquetas en las impresoras del taller y la infraestructura donde corre. Soy el único ingeniero del proyecto, desde el modelo de dominio hasta el deploy.
+
+## El problema era el precio, no el acomodo
+
+"Optimizar el corte" suele significar acomodar rectángulos en una lámina con el menor desperdicio posible. No era lo que el taller necesitaba. El taller no vende desperdicio: vende tableros, y medios tableros. Dos planos con el mismo desperdicio pueden costarle distinto al cliente, y uno que desperdicia más puede salir más barato si termina en un medio tablero.
+
+Por eso el objetivo del optimizador es **el costo del material que paga el cliente**. El medio tablero es un bin real, con su propio precio, que se busca como cualquier otro; no es un descuento que se aplica después. Conté esa historia en [Optimizar el costo, no el acomodo](/es/notes/optimize-for-the-invoice).
+
+<CutPlanFigure />
+
+## Las restricciones que dieron forma al modelo
+
+Cada una es una regla con la que el taller ya trabajaba. El modelo tenía que expresarlas, no aproximarlas.
+
+- **Kerf y refilado.** Cada corte consume el ancho de la hoja de sierra, y los bordes del tablero se refilan antes de cortar.
+- **Veta.** La veta decide si una pieza puede rotar.
+- **Medio tablero.** Es una unidad de venta, pero no para todos los materiales, y no todos se parten por el mismo lado. La regla se deriva del tipo de material que ya registra el inventario del taller, así que se mantiene sola.
+- **Retazos.** Los del taller y los que trae el cliente. Son finitos: cuando el material se acaba, la pregunta deja de ser "qué es lo más barato" y pasa a ser "qué es lo máximo que puedo cortar de aquí".
+- **Tapacanto** por cada lado de cada pieza, y **servicios adicionales** que hace el taller.
+- **Un sistema de inventario existente** que solo se puede leer. El catálogo y los clientes se sincronizan desde él; nunca se escribe nada de vuelta.
+
+## El optimizador
+
+El motor de corte es un paquete sin imports de ningún framework: recibe geometría y precios, y devuelve planos de corte. El resto de la API está organizado alrededor del negocio; esta parte está aislada porque es la que lo justifica.
+
+### Búsqueda por capas
+
+La sierra hace cortes de guillotina, de borde a borde, así que todo plano es un plano en guillotina. La búsqueda parte de una base greedy rápida y, salvo que esa base ya alcance la cota inferior de costo, la mejora por capas:
+
+1. **Beam search sobre particiones:** para cada tablero evalúa un portafolio de llenados candidatos, desde empaquetados greedy hasta patrones por franjas, y conserva los planes parciales más prometedores.
+2. **Una sonda de cierre** que resuelve "unos tableros más un puñado de piezas sueltas" apenas la cola entra en un bin más.
+3. **Large neighborhood search:** destruye los peores tableros y vuelve a buscar sus piezas.
+4. **Un modelo exacto** con CP-SAT de OR-Tools para las preguntas que las heurísticas responden mal, como _¿esta cola entra en un tablero más?_ Sus respuestas factibles se construyen como cortes reales; un "no" de un modelo con presupuesto nunca se toma como prueba de nada.
+
+Cada capa es **aditiva por construcción**: un candidato reemplaza al vigente solo si factura estrictamente menos y coloca todas las piezas. Esa regla es la que me permite agregar una estrategia sin temer que empeore otro trabajo.
+
+### Determinista por diseño
+
+Los resultados se guardan en caché por un hash de la petición, así que el mismo despiece tiene que producir siempre el mismo plano, cualquier día y en cualquier máquina. Eso descarta el tiempo de reloj como criterio de parada. Todo presupuesto se cuenta en unidades de trabajo: llenados candidatos, reinicios, rondas sin mejora y el tiempo determinista del solver. Una versión del motor forma parte del hash y cambia cada vez que la misma entrada puede producir otra geometría, así que nunca se sirve un resultado viejo.
+
+El determinismo también tuvo que sobrevivir al solver. La misma versión fijada de CP-SAT devolvía empaquetados distintos e igual de óptimos en plataformas distintas, y producción facturaba diferente que una laptop. El arreglo no fue buscar más: el plano se reconstruye de forma canónica a partir del contenido que devuelve el solver, y los óptimos empatados colapsan en una sola respuesta.
+
+### Un kernel en Rust con un oráculo en Python
+
+El ciclo más caliente del empaquetado está portado a Rust (PyO3 y maturin). La implementación en Python queda como **referencia y respaldo**, y el port tiene que devolver exactamente las mismas colocaciones, retazos y cortes; por eso el backend ni siquiera entra en la clave del caché. La frontera está donde el motor pide un lote de llenados candidatos, así que el cruce de Python a Rust ocurre pocas veces. Y como la falta del wheel nativo antes hacía un fallback silencioso, la API ahora informa qué backend corre de verdad y registra un warning cuando no es el que se pidió.
+
+### El orden de los cortes
+
+El empaquetador decide dónde van las piezas; en qué orden pasa la sierra es otra pregunta. Una pasada final busca los árboles de guillotina que realizan las mismas colocaciones y se queda con el que deja los retazos más aprovechables: más área útil, en menos retazos y más grandes. Por construcción no puede cambiar el precio, y por eso corre sobre todos los tableros.
+
+## De la cotización a la orden
+
+- **La cotización está viva.** Mientras está abierta, se re-optimiza en cada lectura, así que precios y plano siguen al catálogo actual. Una vez confirmada, muestra exactamente lo que congeló su orden.
+- **El cliente la revisa en un enlace**, sin cuenta: confirma, rechaza o pide cambios. El enlace es un token aleatorio y solo se guarda su hash. Confirmar crea la orden.
+- **La orden es un snapshot inmutable** del plano y sus precios. Una cotización con una pieza que no se puede colocar no se puede guardar, enviar ni confirmar: la web la bloquea primero, y la API la rechaza de todas formas.
+- **El vendedor puede reacomodar un plano a mano**, y **el servidor decide qué es válido**. Las colocaciones son la verdad de un tablero; el árbol de cortes se deriva de ellas, y si no existe un árbol de guillotina, el tablero no se puede cortar. Dos primitivas —sacar una pieza y colocar una pieza— alcanzan cualquier plano válido pasando solo por estados válidos.
+
+## La producción en el taller
+
+La orden avanza por `confirmed → queued → in_process → finished → dispatched`. Entrar a la cola exige la forma de pago y el número de factura, porque ese es el momento en que la venta se cobra.
+
+`in_process` agrupa tres **actividades paralelas** —corte, canteado y trabajos adicionales—, cada una con su estado, su responsable y su reloj, y el estado de la orden se deriva de ellas. Pero paralelo no es independiente: el canteado no puede empezar hasta que se haya cortado una pieza que lleva tapacanto, ni terminar hasta que estén cortadas todas. Esas compuertas se miden por actividad, contra su propio conjunto de piezas. Los roles siguen al taller: el operador corta, el canteador cantea, solo un administrador o un vendedor despacha, y cancelar una orden ya pagada exige a un administrador y un motivo por escrito.
+
+Las etiquetas se imprimen solas. Un agente liviano en el PC con Windows del taller mantiene un **long-poll saliente** hacia la API, descarga lo que el backend ya generó, lo imprime y lo confirma. La entrega es "al menos una vez": una etiqueta duplicada es aceptable, una perdida no. El agente solo hace peticiones salientes, así que la red del taller no abre nada.
+
+## Arquitectura
+
+- **API:** FastAPI organizada en **vertical slices** —cada recurso tiene su router, su servicio, sus schemas y su modelo— con una base CRUD genérica y un único pipeline de errores. No hay una capa de casos de uso por entidad: el código que necesita un recurso vive en una sola carpeta.
+- **Datos:** PostgreSQL, y Redis como caché de los resultados de optimización.
+- **Web:** React y TypeScript.
+- **Entrega:** Docker Compose en un VPS detrás de Caddy. La SPA y la API comparten un solo origen, así que no hay CORS y la imagen del frontend sirve en cualquier entorno. GitHub Actions prueba, construye y publica las imágenes; el servidor solo las descarga. El script de deploy espera a que el contenedor nuevo se reporte sano y, si no lo hace, restaura el tag anterior.
+
+## Trade-offs, por escrito
+
+<Aside label="Trade-off">
+  El solver exacto gana tableros, pero también es donde se va la mayor parte del
+  tiempo. Lo medí y lo acoté —presupuestos de trabajo separados para decidir y
+  para optimizar, y un corte después de rondas que no mejoran nada— y tomé ese
+  trade-off a propósito: un vendedor que cotiza con el cliente enfrente vale más
+  que un ahorro ocasional en un trabajo raro.
+</Aside>
+
+La cotización viva tiene un hueco conocido, escrito en vez de escondido. Si el plano en caché expira y un deploy cambia el motor entre el momento en que el cliente ve la cotización y el momento en que la confirma, la orden congela el plano nuevo, no el que vio. Congelar un snapshot al enviar la cotización lo cerraría. Decidí no hacerlo por ahora: cuesta una migración, y obliga a respetar el precio enviado durante toda la vigencia de la cotización.

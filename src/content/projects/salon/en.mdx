@@ -31,4 +31,56 @@ export const meta = {
   ],
 };
 
-{/* The case study is written in phase 4. */}
+## The business
+
+A beauty salon needed one place for its whole day: appointments, clients and their history, the services and their prices, the money that comes in, the money that goes out, and before-and-after photos. The app is designed for the phone first.
+
+I built it alone in 2026: product, API, web app and the server it's built to run on. The salon isn't named here, and neither is the product, until both are confirmed for publication.
+
+## Rules that live where nothing can skip them
+
+In a small business nobody audits every entry. If the software lets the books disagree with themselves, the mistake surfaces late, if at all. So the rules that matter are enforced at the lowest level that can hold them: the database, or a single code path that every write goes through.
+
+### No double booking, by construction
+
+Two appointments can't share the chair. A Python check would read the calendar and then write to it, and two requests that both read before either writes would both pass — exactly what happens when two people confirm the same slot at the same second. So the rule is a **PostgreSQL exclusion constraint with a GiST index** over each appointment's time range. Only the statuses that actually occupy the chair take part, and an appointment can opt out explicitly, by someone allowed to, for the rare case where two clients really can share a station.
+
+### Prices that don't move after the fact
+
+Each appointment **freezes the price of its services** when it's booked. The catalog keeps a contiguous history of each service's price: changing it closes the current period and opens a new one, in one transaction, so past appointments and past takings are never rewritten by today's price. Discounts and extra charges are absolute amounts, and the database refuses either one without a reason.
+
+### Money is appended, never edited
+
+Payments are **append-only**. There's no soft delete, deleting is refused, and editing a payment only touches its reference and its note. A mistake is corrected with a **refund**: a new row that points at the payment it corrects, and a check constraint keeps that pointer consistent with the kind of row. The till is a ledger, and a ledger is read, not rewritten.
+
+### Closing the books in the right time zone
+
+The owner can close the books through a date, after which nothing dated on or before it can be written by anyone else. The comparison happens in the **business's own time zone**: seven in the evening on the 31st, in Ecuador, is already the 1st in UTC, and a server that compared in UTC would put an evening's takings in the wrong month. For the same reason, the books can't be closed on the day in progress.
+
+### Every change of state goes through one door
+
+An appointment changes status in one place only, which writes the status history and a **domain event to an outbox, in the same transaction**. Nothing consumes the outbox yet, and that's deliberate: its value is historical. A reminder or an automation added next year can start from events that were recorded all along — but it could never recover the ones that weren't. Each event carries a self-contained snapshot, so a consumer that processes it days later doesn't depend on the current state of the row.
+
+These rules, and the ones in my other projects, are the subject of [Business rules where they can't be bypassed](/en/notes/rules-that-cant-be-bypassed).
+
+## The architecture I deleted
+
+I started with the architecture of a platform: **multi-tenancy**, with a global ORM filter that injected the tenant into every query and failed closed; branches; and a roster of professionals, each with their own week and leave. All of it was tested, and all of it worked.
+
+Then the business turned out to be one salon, where the owner attends every appointment. The tenant filter, the branches and the roster had no reader — every one of those columns always held the same value. So I removed them end to end: the tables, the foreign keys, the token claims, the login rules and the scripts. The tenant module became a single-row `business` table with the settings something actually reads, and the overlap constraint went from "per professional" to "one chair".
+
+That decision is the subject of [Deleting the architecture you didn't need](/en/notes/deleting-the-architecture-you-didnt-need).
+
+## Details that make it usable
+
+- **Photos** are re-encoded on upload: orientation applied, every bit of metadata dropped, two renditions kept instead of the original. They are served through **signed, expiring URLs**, signed with a key derived from — not equal to — the one that signs sessions, since URLs end up pasted in chats and access logs.
+- **Files before rows.** A photo's file is written before its row and deleted after it. The two stores can't be atomic, so the order picks the failure that's survivable: an orphaned file is garbage to collect, an orphaned row is a broken image on a client's profile.
+- **A confirmation link** lets a client review and confirm an appointment without an account. It shows when and what, never prices, phone numbers or notes, and stops working a week after the appointment.
+- **The start screen** answers the owner's daily questions: who came today, who hasn't been back in a while, the services done most, and the birthdays coming up.
+
+## Operations on one VPS
+
+- **A shared edge.** One Caddy, in its own Compose project, owns ports 80 and 443 and terminates TLS for every site on the server. Each project joins an external `edge` network with its own aliases and adds one file to the proxy's sites; its database never joins that network. This portfolio is planned to run behind the same edge.
+- **The server never builds.** GitHub Actions runs the tests, builds the images and publishes them to GHCR; the server only pulls. The SPA and the API share one origin.
+- **Deploys roll back.** The deploy script waits for the new container to be healthy and restores the previous image tag if it isn't. A rollback restores the image, never the schema, so migrations are written expand-then-contract and the previous image keeps working against the new schema.
+- **Backups are rehearsed.** A scheduled dump, and a restore drill that loads the newest one into a scratch database, checks it and drops it.

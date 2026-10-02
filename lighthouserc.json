@@ -3,7 +3,12 @@
     "collect": {
       "startServerCommand": "npm run start",
       "startServerReadyPattern": "Ready",
-      "url": ["http://127.0.0.1:3000/en", "http://127.0.0.1:3000/es"],
+      "url": [
+        "http://127.0.0.1:3000/en",
+        "http://127.0.0.1:3000/es",
+        "http://127.0.0.1:3000/en/projects/maderable",
+        "http://127.0.0.1:3000/es/notes/following-a-request-across-kafka"
+      ],
       "numberOfRuns": 3,
       "settings": {
         "formFactor": "mobile",
