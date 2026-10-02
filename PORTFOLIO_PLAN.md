@@ -12,16 +12,16 @@ Reemplazar el sitio Django de 2020–2021 (plantilla con barras de "Python 90%")
 
 Imagen que debe transmitir: **Software Engineer orientado a producto, backend, arquitectura y construcción de sistemas reales.**
 
-Criterio de éxito (pregunta §30 del brief): *si se elimina la sección Stack, ¿el resto del sitio todavía demuestra que Denis sabe construir software?* La respuesta tiene que ser **sí**.
+Criterio de éxito (pregunta §30 del brief): _si se elimina la sección Stack, ¿el resto del sitio todavía demuestra que Denis sabe construir software?_ La respuesta tiene que ser **sí**.
 
 ## 2. Audiencia
 
-| Visitante | Qué necesita en menos de un minuto | Dónde lo encuentra |
-|---|---|---|
-| Engineering Manager | Qué tipo de problemas resuelve y con qué criterio | What I Build, Featured Work, How I Work |
-| CTO / Founder | Si puede llevar un problema de negocio a producción solo | Case study de Maderable, Colophon |
-| Technical Recruiter | Rol, experiencia, stack y contacto | Hero, Experience, Stack, Contact |
-| Software Engineer | Profundidad técnica real y trade-offs honestos | Engineering Notes, diagramas, código del repo |
+| Visitante           | Qué necesita en menos de un minuto                       | Dónde lo encuentra                            |
+| ------------------- | -------------------------------------------------------- | --------------------------------------------- |
+| Engineering Manager | Qué tipo de problemas resuelve y con qué criterio        | What I Build, Featured Work, How I Work       |
+| CTO / Founder       | Si puede llevar un problema de negocio a producción solo | Case study de Maderable, Colophon             |
+| Technical Recruiter | Rol, experiencia, stack y contacto                       | Hero, Experience, Stack, Contact              |
+| Software Engineer   | Profundidad técnica real y trade-offs honestos           | Engineering Notes, diagramas, código del repo |
 
 ## 3. Propuesta de valor
 
@@ -29,23 +29,23 @@ Criterio de éxito (pregunta §30 del brief): *si se elimina la sección Stack, 
 
 **Borrador del Hero** (se pule en la Fase 3):
 
-| | EN | ES |
-|---|---|---|
-| Eyebrow | Denis Siavichay · Software Engineer | Denis Siavichay · Software Engineer |
-| Título | I build the software a business runs on. | Construyo el software con el que opera un negocio. |
-| Bajada | Quoting, inventory, invoicing, production — modeled from the domain up and shipped with the pipeline that keeps it reliable. | Cotización, inventario, facturación, producción: modelado desde el dominio y entregado con el pipeline que lo mantiene confiable. |
-| CTAs | See the work · Get in touch | Ver proyectos · Contactar |
-| Ubicación | Based in Ecuador · remote (UTC−5) | En Ecuador · remoto (UTC−5) |
+|           | EN                                                                                                                           | ES                                                                                                                                |
+| --------- | ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Eyebrow   | Denis Siavichay · Software Engineer                                                                                          | Denis Siavichay · Software Engineer                                                                                               |
+| Título    | I build the software a business runs on.                                                                                     | Construyo el software con el que opera un negocio.                                                                                |
+| Bajada    | Quoting, inventory, invoicing, production — modeled from the domain up and shipped with the pipeline that keeps it reliable. | Cotización, inventario, facturación, producción: modelado desde el dominio y entregado con el pipeline que lo mantiene confiable. |
+| CTAs      | See the work · Get in touch                                                                                                  | Ver proyectos · Contactar                                                                                                         |
+| Ubicación | Based in Ecuador · remote (UTC−5)                                                                                            | En Ecuador · remoto (UTC−5)                                                                                                       |
 
 ## 4. Fuentes de evidencia
 
-| Fuente | Qué aporta |
-|---|---|
-| CV de junio de 2024 y export de LinkedIn de 2023 | Historial laboral, educación, idiomas |
-| Historial de git de cada repositorio (`git shortlog`, fechas de primer y último commit) | Autoría, períodos y evolución de cada proyecto |
-| Documentación de cada repo (README, `docs/`, notas de arquitectura, mensajes de commit) | Problemas, decisiones y trade-offs |
-| PyPI | Paquetes publicados y fechas de releases |
-| Respuestas de Denis durante la planificación | Idioma, VPS, situación laboral y restricciones de publicación |
+| Fuente                                                                                  | Qué aporta                                                    |
+| --------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| CV de junio de 2024 y export de LinkedIn de 2023                                        | Historial laboral, educación, idiomas                         |
+| Historial de git de cada repositorio (`git shortlog`, fechas de primer y último commit) | Autoría, períodos y evolución de cada proyecto                |
+| Documentación de cada repo (README, `docs/`, notas de arquitectura, mensajes de commit) | Problemas, decisiones y trade-offs                            |
+| PyPI                                                                                    | Paquetes publicados y fechas de releases                      |
+| Respuestas de Denis durante la planificación                                            | Idioma, VPS, situación laboral y restricciones de publicación |
 
 ## 5. Proyectos
 
@@ -134,16 +134,17 @@ Pruebas técnicas de procesos de selección, ejercicios de cursos, plantillas y 
 
 Formato de cada entrada: **problema → acción → resultado**. Los resultados solo aparecen si están documentados.
 
-| Período | Organización | Rol | Fuente |
-|---|---|---|---|
-| `TODO: CONFIRM WITH DENIS` | `TODO: CONFIRM WITH DENIS` (empleo actual) | `TODO: CONFIRM WITH DENIS` | Denis confirmó empleo + clientes |
-| 2025 – presente | Independiente: proyectos para clientes y productos propios | Software Engineer | git (Maderable, Grazia) |
-| 10/2021 – `TODO: CONFIRM WITH DENIS` | Jüsto (e-commerce, México, remoto) | Software Engineer | CV 2024 |
-| 09/2019 – 09/2021 | Municipio del cantón Morona | Software Developer, líder de equipo (3) | CV 2024, git |
-| 09/2015 – 08/2019 | Municipio del cantón Morona | Systems Analyst | CV 2024, git |
-| 03/2013 – 08/2015 | Independiente (negocio local) | Freelancer | CV 2024 |
+| Período                              | Organización                                               | Rol                                     | Fuente                           |
+| ------------------------------------ | ---------------------------------------------------------- | --------------------------------------- | -------------------------------- |
+| `TODO: CONFIRM WITH DENIS`           | `TODO: CONFIRM WITH DENIS` (empleo actual)                 | `TODO: CONFIRM WITH DENIS`              | Denis confirmó empleo + clientes |
+| 2025 – presente                      | Independiente: proyectos para clientes y productos propios | Software Engineer                       | git (Maderable, Grazia)          |
+| 10/2021 – `TODO: CONFIRM WITH DENIS` | Jüsto (e-commerce, México, remoto)                         | Software Engineer                       | CV 2024                          |
+| 09/2019 – 09/2021                    | Municipio del cantón Morona                                | Software Developer, líder de equipo (3) | CV 2024, git                     |
+| 09/2015 – 08/2019                    | Municipio del cantón Morona                                | Systems Analyst                         | CV 2024, git                     |
+| 03/2013 – 08/2015                    | Independiente (negocio local)                              | Freelancer                              | CV 2024                          |
 
 Detalle de Jüsto (según el CV de 2024):
+
 - Funcionalidades para mejorar la conversión del sitio.
 - Integraciones con servicios externos para campañas promocionales.
 - Participación en la migración del sistema a microservicios en Python y, sobre todo, Node.js, sobre AWS, con métricas y monitoreo.
@@ -151,6 +152,7 @@ Detalle de Jüsto (según el CV de 2024):
 Cualquier resultado cuantificado queda como `TODO: CONFIRM WITH DENIS`.
 
 **Educación:**
+
 - Máster en Ingeniería de Software y Sistemas Informáticos, Universidad Internacional de La Rioja (2018–2019).
 - Ingeniería en Sistemas, Escuela Superior Politécnica de Chimborazo.
 
@@ -158,13 +160,13 @@ Cualquier resultado cuantificado queda como `TODO: CONFIRM WITH DENIS`.
 
 Historias técnicas en MDX, en ambos idiomas.
 
-| # | Título (EN) | Proyecto de origen | Tesis |
-|---|---|---|---|
-| 1 | Optimize for the invoice, not the layout | Maderable | El problema real no era "acomodar piezas" sino "cobrar el menor material posible", con determinismo como requisito. Sin cifras. |
-| 2 | From monolith to services — and partly back | Faclab (+ contexto de Jüsto) | Extraer servicios tiene costo. La granularidad correcta se descubre, y a veces implica volver a unir. |
-| 3 | Business rules where they can't be bypassed | Grazia, Maderable, Faclab | Una regla que importa vive donde ninguna ruta de código puede saltarla. |
-| 4 | Following a request across Kafka | Faclab | Spans por handler, métricas, logs estructurados y contexto de traza a través de la cola. |
-| 5 | Deleting the architecture you didn't need | Grazia | La complejidad se justifica con un lector real, no con un futuro hipotético. |
+| #   | Título (EN)                                 | Proyecto de origen           | Tesis                                                                                                                           |
+| --- | ------------------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Optimize for the invoice, not the layout    | Maderable                    | El problema real no era "acomodar piezas" sino "cobrar el menor material posible", con determinismo como requisito. Sin cifras. |
+| 2   | From monolith to services — and partly back | Faclab (+ contexto de Jüsto) | Extraer servicios tiene costo. La granularidad correcta se descubre, y a veces implica volver a unir.                           |
+| 3   | Business rules where they can't be bypassed | Grazia, Maderable, Faclab    | Una regla que importa vive donde ninguna ruta de código puede saltarla.                                                         |
+| 4   | Following a request across Kafka            | Faclab                       | Spans por handler, métricas, logs estructurados y contexto de traza a través de la cola.                                        |
+| 5   | Deleting the architecture you didn't need   | Grazia                       | La complejidad se justifica con un lector real, no con un futuro hipotético.                                                    |
 
 ## 8. Sitemap
 
@@ -186,7 +188,7 @@ Todas las rutas existen en `/en` y en `/es`. `/` redirige según cookie > `Accep
 El orden va de la evidencia a la lista. El Stack queda tarde a propósito.
 
 1. **Navbar:** skip link, anclas, selector de idioma y ⌘K.
-2. **Hero + System Status:** un panel con datos reales de *este* build (commit, fecha, runtime, edge, pipeline). El sitio se describe a sí mismo.
+2. **Hero + System Status:** un panel con datos reales de _este_ build (commit, fecha, runtime, edge, pipeline). El sitio se describe a sí mismo.
 3. **What I Build:** 4 capacidades (Business platforms, Integrations, Distributed systems, Optimization). Cada una enlaza a la evidencia.
 4. **Featured Work:** Maderable destacado; Faclab y Grazia medianos; SIM compacto; franja Open source.
 5. **Engineering Notes.**
@@ -212,18 +214,18 @@ El orden va de la evidencia a la lista. El Stack queda tarde a propósito.
 
 ## 11. Stack del sitio
 
-| Pieza | Elección | Por qué |
-|---|---|---|
-| Framework | Next.js (App Router), React, TypeScript strict | SSG para todo, Server Components por defecto, OG images y metadata nativas |
-| Estilos | Tailwind CSS v4 con tokens en `@theme` | Sistema de diseño en CSS, sin runtime |
-| Contenido | MDX con `@next/mdx` | Case studies como contenido, con componentes React interactivos dentro |
-| Validación | Zod | Frontmatter, datos, env de build y datos de visualizaciones |
-| Animación | Motion (`LazyMotion` + `domAnimation`) | Bundle pequeño, respeta reduced motion |
-| Diagramas | React Flow, solo en 2 diagramas de case studies, cargado lazy | Pan, zoom y nodos inspeccionables donde aportan; el resto son diagramas estáticos |
-| Íconos | Lucide React | Tree-shakeable y consistente |
-| Tests | Vitest + Testing Library; Playwright + axe; Lighthouse CI | Unidad, end-to-end, accesibilidad y performance como gates |
-| Calidad | ESLint (flat config), Prettier, TypeScript strict | Sin warnings evitables |
-| i18n | Segmento `[lang]` y diccionarios tipados, sin librería | Dos idiomas estáticos no justifican una dependencia |
+| Pieza      | Elección                                                      | Por qué                                                                           |
+| ---------- | ------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Framework  | Next.js (App Router), React, TypeScript strict                | SSG para todo, Server Components por defecto, OG images y metadata nativas        |
+| Estilos    | Tailwind CSS v4 con tokens en `@theme`                        | Sistema de diseño en CSS, sin runtime                                             |
+| Contenido  | MDX con `@next/mdx`                                           | Case studies como contenido, con componentes React interactivos dentro            |
+| Validación | Zod                                                           | Frontmatter, datos, env de build y datos de visualizaciones                       |
+| Animación  | Motion (`LazyMotion` + `domAnimation`)                        | Bundle pequeño, respeta reduced motion                                            |
+| Diagramas  | React Flow, solo en 2 diagramas de case studies, cargado lazy | Pan, zoom y nodos inspeccionables donde aportan; el resto son diagramas estáticos |
+| Íconos     | Lucide React                                                  | Tree-shakeable y consistente                                                      |
+| Tests      | Vitest + Testing Library; Playwright + axe; Lighthouse CI     | Unidad, end-to-end, accesibilidad y performance como gates                        |
+| Calidad    | ESLint (flat config), Prettier, TypeScript strict             | Sin warnings evitables                                                            |
+| i18n       | Segmento `[lang]` y diccionarios tipados, sin librería        | Dos idiomas estáticos no justifican una dependencia                               |
 
 ## 12. Arquitectura de la aplicación
 
@@ -312,18 +314,24 @@ El VPS nunca hace builds ni guarda credenciales de git: solo descarga imágenes.
 
 ## 16. Registro de decisiones
 
-| # | Decisión | Alternativas | Razón |
-|---|---|---|---|
-| D1 | Contenedor Next.js `standalone` detrás de Caddy | `output: 'export'` servido por Caddy | Es la arquitectura pedida; da optimización de imágenes, OG images y headers. El export estático habría sido válido y más simple. |
-| D2 | Unirse al edge Caddy existente | Caddy propio en el compose del portfolio | Solo un proceso puede ser dueño de 80/443; el edge ya existe para alojar varios sitios. |
-| D3 | Bilingüe con `[lang]` y diccionarios propios | next-intl u otra librería | Dos idiomas estáticos; menos dependencias y menos JS. |
-| D4 | MDX con `@next/mdx` y `export const meta` validado con Zod | Contentlayer, Velite, next-mdx-remote | Integración oficial, sin build paralelo; Zod da el contrato. |
-| D5 | React Flow solo en 2 diagramas, cargado lazy, con fallback SSR | Usarlo en todos los diagramas | Solo aporta donde hay que explorar una topología; el resto es SVG/HTML estático. |
-| D6 | Sin formulario de contacto | Formulario + backend de email | `mailto:` y copiar email resuelven el problema sin infraestructura. |
-| D7 | Sin DB, Redis ni colas | — | El sitio no tiene estado. Complejidad adecuada al problema. |
-| D8 | `pending()` tipado para lo no confirmado | Texto libre "TODO" | Visible en desarrollo, omitido en producción y listable en CI. |
-| D9 | Imagen en GHCR, el VPS solo hace pull | Build en el VPS | No compite por CPU y memoria con producción; el rollback es cambiar de tag. |
-| D10 | Maderable sin cifras | Publicar benchmarks | Restricción del cliente. |
+| #   | Decisión                                                       | Alternativas                             | Razón                                                                                                                            |
+| --- | -------------------------------------------------------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Contenedor Next.js `standalone` detrás de Caddy                | `output: 'export'` servido por Caddy     | Es la arquitectura pedida; da optimización de imágenes, OG images y headers. El export estático habría sido válido y más simple. |
+| D2  | Unirse al edge Caddy existente                                 | Caddy propio en el compose del portfolio | Solo un proceso puede ser dueño de 80/443; el edge ya existe para alojar varios sitios.                                          |
+| D3  | Bilingüe con `[lang]` y diccionarios propios                   | next-intl u otra librería                | Dos idiomas estáticos; menos dependencias y menos JS.                                                                            |
+| D4  | MDX con `@next/mdx` y `export const meta` validado con Zod     | Contentlayer, Velite, next-mdx-remote    | Integración oficial, sin build paralelo; Zod da el contrato.                                                                     |
+| D5  | React Flow solo en 2 diagramas, cargado lazy, con fallback SSR | Usarlo en todos los diagramas            | Solo aporta donde hay que explorar una topología; el resto es SVG/HTML estático.                                                 |
+| D6  | Sin formulario de contacto                                     | Formulario + backend de email            | `mailto:` y copiar email resuelven el problema sin infraestructura.                                                              |
+| D7  | Sin DB, Redis ni colas                                         | —                                        | El sitio no tiene estado. Complejidad adecuada al problema.                                                                      |
+| D8  | `pending()` tipado para lo no confirmado                       | Texto libre "TODO"                       | Visible en desarrollo, omitido en producción y listable en CI.                                                                   |
+| D9  | Imagen en GHCR, el VPS solo hace pull                          | Build en el VPS                          | No compite por CPU y memoria con producción; el rollback es cambiar de tag.                                                      |
+| D10 | Maderable sin cifras                                           | Publicar benchmarks                      | Restricción del cliente.                                                                                                         |
+| D11 | ESLint 9                                                       | ESLint 10                                | Los plugins que trae `eslint-config-next` (react, jsx-a11y, import) todavía no declaran soporte para ESLint 10.                  |
+| D12 | Node ≥ 22.12 en local; Node 24 en CI y Docker; jsdom 28        | jsdom 30                                 | jsdom 30 exige Node 22.22+; con la 28 los tests corren igual en local y en CI.                                                   |
+| D13 | Íconos de marca (GitHub, LinkedIn) como SVG propios            | Otra librería de íconos                  | Lucide v1 retiró las marcas; dos SVG de Simple Icons (CC0) no justifican otra dependencia.                                       |
+| D14 | 404 localizada con un catch-all `[lang]/[...missing]`          | `global-not-found` (experimental)        | La 404 se muestra dentro del layout y en el idioma de la ruta, con status 404, sin flags experimentales.                         |
+| D15 | Style guide en `/[lang]/design-system`, solo en desarrollo     | Storybook                                | Revisión visual de tokens y componentes sin otra herramienta; en producción responde 404.                                        |
+| D16 | Paleta de Tailwind desactivada; solo existen los tokens        | Paleta por defecto + tokens              | Ningún color fuera del sistema puede colarse en un componente.                                                                   |
 
 ## 17. Pendientes: `TODO: CONFIRM WITH DENIS`
 
@@ -344,19 +352,19 @@ El VPS nunca hace builds ni guarda credenciales de git: solo descarga imágenes.
 
 Cada fase se trabaja en su propia rama (`portfolio/fase-N-<nombre>`), termina con un commit y se pausa para revisión.
 
-| Fase | Entregable | Estado |
-|---|---|---|
-| 1. Discovery | Este documento | ✅ |
-| 2. Design system | Retiro de Django, scaffold de Next.js, tooling, tokens y componentes base | Pendiente |
-| 3. Core | Home bilingüe completa | Pendiente |
-| 4. Case studies | Maderable, Faclab, Grazia, SIM + notas | Pendiente |
-| 5. Interactive engineering | Plano de corte, pipeline del pedido, diagramas, ⌘K | Pendiente |
-| 6. Deployment | Dockerfile, compose, Caddy, CI/CD, documentación | Pendiente |
-| 7. Quality | Tests, Lighthouse, accesibilidad, correcciones | Pendiente |
-| 8. Final polish | Revisión completa + respuesta a la pregunta §30 | Pendiente |
+| Fase                       | Entregable                                                                | Estado    |
+| -------------------------- | ------------------------------------------------------------------------- | --------- |
+| 1. Discovery               | Este documento                                                            | ✅        |
+| 2. Design system           | Retiro de Django, scaffold de Next.js, tooling, tokens y componentes base | ✅        |
+| 3. Core                    | Home bilingüe completa                                                    | Pendiente |
+| 4. Case studies            | Maderable, Faclab, Grazia, SIM + notas                                    | Pendiente |
+| 5. Interactive engineering | Plano de corte, pipeline del pedido, diagramas, ⌘K                        | Pendiente |
+| 6. Deployment              | Dockerfile, compose, Caddy, CI/CD, documentación                          | Pendiente |
+| 7. Quality                 | Tests, Lighthouse, accesibilidad, correcciones                            | Pendiente |
+| 8. Final polish            | Revisión completa + respuesta a la pregunta §30                           | Pendiente |
 
 ## 19. Pregunta §30
 
-*"Si elimino completamente la sección de Skills, ¿el resto del sitio todavía demuestra que Denis sabe construir software?"*
+_"Si elimino completamente la sección de Skills, ¿el resto del sitio todavía demuestra que Denis sabe construir software?"_
 
 Se responde por escrito al cerrar la Fase 8, con referencias concretas a las secciones y páginas que lo demuestran.

@@ -1,10 +1,23 @@
-*~
-*.pyc
-media/
-scripts/
-**/migrations/*
-!**/migrations/__init__.py
-.vscode
-*.lock
+# dependencies
+/node_modules
+
+# next.js
+/.next/
+/out/
+next-env.d.ts
+*.tsbuildinfo
+
+# testing
+/coverage
+/playwright-report
+/test-results
+/.lighthouseci
+
+# env files
+.env*
+!.env.example
+
+# misc
 .DS_Store
-.env
+*.pem
+npm-debug.log*
