@@ -22,6 +22,8 @@ Cuando el objetivo pasó a ser **el costo del material que paga el cliente**, va
 - **Los retazos son bins con existencias.** Los retazos del taller tienen precio; los que trae el cliente no le cuestan nada, porque el taller cobra el corte y el canteado como servicios. Un pool de retazos es un conjunto finito de bins de distintos tamaños, y la búsqueda lo trata como tal.
 - **Un bin gratis rompe una cota inferior.** La búsqueda termina antes cuando su solución base ya alcanza una cota inferior de costo. Pero apenas un bin es gratis, la única cota de costo válida es cero, y una base que no cuesta nada la "alcanza". En un trabajo cortado entero sobre retazos del cliente, la búsqueda completa se saltaba, justo en el trabajo cuyo valor es el empaquetado. Una cota de costo cero no es una prueba; cuando el costo no puede decidir, la cota pasa a ser el número de láminas.
 
+<CutPlan />
+
 ## Cuando el material se acaba, el costo no responde
 
 Los retazos que trae un cliente son finitos. A veces no entra todo, y entonces "lo más barato" deja de ser la pregunta: el vendedor necesita **lo máximo que se puede cortar de lo que hay**, y el resto saldrá de un tablero que el cliente compra.

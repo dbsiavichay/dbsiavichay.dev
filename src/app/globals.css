@@ -211,14 +211,17 @@
   }
 }
 
-/* Long-form typography for MDX case studies and notes. */
+/*
+ * Long-form typography for MDX case studies and notes. Figures that bring
+ * their own layout (the interactive ones) opt out with `not-prose`.
+ */
 @utility prose {
   max-width: var(--container-prose);
   color: var(--fg-muted);
   font-size: var(--text-lg);
   line-height: var(--text-lg--line-height);
 
-  & :where(h2) {
+  & :where(h2):not(:where(.not-prose, .not-prose *)) {
     margin-top: 3.5rem;
     margin-bottom: 1rem;
     color: var(--fg);
@@ -228,7 +231,7 @@
     font-weight: 600;
   }
 
-  & :where(h3) {
+  & :where(h3):not(:where(.not-prose, .not-prose *)) {
     margin-top: 2.25rem;
     margin-bottom: 0.75rem;
     color: var(--fg);
@@ -237,52 +240,55 @@
     font-weight: 600;
   }
 
-  & :where(p, ul, ol, blockquote, pre, table, figure) {
+  &
+    :where(p, ul, ol, blockquote, pre, table, figure):not(
+      :where(.not-prose, .not-prose *)
+    ) {
     margin-block: 1.25rem;
   }
 
-  & :where(strong) {
+  & :where(strong):not(:where(.not-prose, .not-prose *)) {
     color: var(--fg);
     font-weight: 600;
   }
 
-  & :where(a) {
+  & :where(a):not(:where(.not-prose, .not-prose *)) {
     color: var(--fg);
     text-decoration: underline;
     text-decoration-color: var(--line-strong);
     text-underline-offset: 0.25em;
   }
 
-  & :where(a:hover) {
+  & :where(a:hover):not(:where(.not-prose, .not-prose *)) {
     text-decoration-color: var(--accent);
   }
 
-  & :where(ul) {
+  & :where(ul):not(:where(.not-prose, .not-prose *)) {
     list-style: square;
     padding-left: 1.25rem;
   }
 
-  & :where(ol) {
+  & :where(ol):not(:where(.not-prose, .not-prose *)) {
     list-style: decimal;
     padding-left: 1.5rem;
   }
 
-  & :where(li) {
+  & :where(li):not(:where(.not-prose, .not-prose *)) {
     margin-block: 0.4rem;
     padding-left: 0.25rem;
   }
 
-  & :where(li)::marker {
+  & :where(li):not(:where(.not-prose, .not-prose *))::marker {
     color: var(--fg-subtle);
   }
 
-  & :where(blockquote) {
+  & :where(blockquote):not(:where(.not-prose, .not-prose *)) {
     border-left: 2px solid var(--accent);
     padding-left: 1.25rem;
     color: var(--fg);
   }
 
-  & :where(code):not(:where(pre code)) {
+  & :where(code):not(:where(pre code)):not(:where(.not-prose, .not-prose *)) {
     border: 1px solid var(--line);
     border-radius: 4px;
     background-color: var(--surface);
@@ -292,7 +298,7 @@
     font-size: 0.875em;
   }
 
-  & :where(pre) {
+  & :where(pre):not(:where(.not-prose, .not-prose *)) {
     overflow-x: auto;
     border: 1px solid var(--line);
     border-radius: 8px;
@@ -303,8 +309,21 @@
     line-height: 1.6;
   }
 
-  & :where(hr) {
+  & :where(hr):not(:where(.not-prose, .not-prose *)) {
     margin-block: 3rem;
     border-color: var(--line);
   }
+}
+
+/*
+ * React Flow's attribution, in the site's colours. Its stylesheet loads with
+ * the interactive canvas and is unlayered, so these rules are too.
+ */
+.diagram-canvas .react-flow__attribution {
+  background: var(--surface);
+  padding: 2px 6px;
+}
+
+.diagram-canvas .react-flow__attribution a {
+  color: var(--fg-subtle);
 }

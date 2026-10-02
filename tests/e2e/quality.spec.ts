@@ -52,6 +52,7 @@ const layoutPaths = [
   "/en",
   "/es",
   "/en/projects/maderable",
+  "/es/projects/faclab",
   "/es/notes/monolith-to-services-and-back",
 ];
 

@@ -46,7 +46,7 @@ Construí el sistema que hace todo eso: la API, la aplicación web, el optimizad
 
 Por eso el objetivo del optimizador es **el costo del material que paga el cliente**. El medio tablero es un bin real, con su propio precio, que se busca como cualquier otro; no es un descuento que se aplica después. Conté esa historia en [Optimizar el costo, no el acomodo](/es/notes/optimize-for-the-invoice).
 
-<CutPlanFigure />
+<CutPlan />
 
 ## Las restricciones que dieron forma al modelo
 
@@ -90,6 +90,10 @@ El empaquetador decide dónde van las piezas; en qué orden pasa la sierra es ot
 
 ## De la cotización a la orden
 
+Un trabajo pasa por dos máquinas de estados: la de la cotización, que sigue viva, y la de la orden, que queda congelada. Recórrelas aquí; los detalles vienen después.
+
+<OrderPipeline />
+
 - **La cotización está viva.** Mientras está abierta, se re-optimiza en cada lectura, así que precios y plano siguen al catálogo actual. Una vez confirmada, muestra exactamente lo que congeló su orden.
 - **El cliente la revisa en un enlace**, sin cuenta: confirma, rechaza o pide cambios. El enlace es un token aleatorio y solo se guarda su hash. Confirmar crea la orden.
 - **La orden es un snapshot inmutable** del plano y sus precios. Una cotización con una pieza que no se puede colocar no se puede guardar, enviar ni confirmar: la web la bloquea primero, y la API la rechaza de todas formas.
@@ -109,6 +113,8 @@ Las etiquetas se imprimen solas. Un agente liviano en el PC con Windows del tall
 - **Datos:** PostgreSQL, y Redis como caché de los resultados de optimización.
 - **Web:** React y TypeScript.
 - **Entrega:** Docker Compose en un VPS detrás de Caddy. La SPA y la API comparten un solo origen, así que no hay CORS y la imagen del frontend sirve en cualquier entorno. GitHub Actions prueba, construye y publica las imágenes; el servidor solo las descarga. El script de deploy espera a que el contenedor nuevo se reporte sano y, si no lo hace, restaura el tag anterior.
+
+<ArchitectureDiagram name="maderable" />
 
 ## Trade-offs, por escrito
 

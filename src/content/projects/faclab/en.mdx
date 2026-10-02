@@ -45,6 +45,8 @@ Faclab is also where I changed the architecture the most, and where I learned wh
 4. **Invoicing as a service (2025).** A TypeScript service took over the invoice: it consumed a Kafka message when a sale was invoiced, called the core back over HTTP to fetch the data, had the signing service seal it, and talked to the SRI. The core itself moved to a new FastAPI codebase.
 5. **Partly back (2026).** The sale event started carrying everything the invoice needs, and signing moved back inside the invoicing service.
 
+<ArchitectureDiagram name="faclab" />
+
 The last step undid part of my own work, on purpose. I wrote it up in [From monolith to services — and partly back](/en/notes/monolith-to-services-and-back).
 
 ## The core: Clean Architecture where it pays

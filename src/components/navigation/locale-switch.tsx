@@ -3,23 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import {
-  LOCALE_COOKIE,
-  localeNames,
-  locales,
-  type Locale,
-} from "@/i18n/config";
+import { localeNames, locales, type Locale } from "@/i18n/config";
 import { localizedPath } from "@/i18n/paths";
+import { rememberLocale } from "@/i18n/remember-locale";
 
 type LocaleSwitchProps = {
   current: Locale;
   label: string;
 };
-
-function rememberLocale(locale: Locale) {
-  // Read by the proxy on the next visit to "/", so the choice sticks.
-  document.cookie = `${LOCALE_COOKIE}=${locale}; path=/; max-age=31536000; samesite=lax`;
-}
 
 export function LocaleSwitch({ current, label }: LocaleSwitchProps) {
   const pathname = usePathname() ?? `/${current}`;

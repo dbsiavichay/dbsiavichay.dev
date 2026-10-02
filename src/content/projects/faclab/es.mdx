@@ -45,6 +45,8 @@ Faclab es también donde más cambié la arquitectura, y donde aprendí lo que c
 4. **La facturación como servicio (2025).** Un servicio en TypeScript se hizo cargo de la factura: consumía un mensaje de Kafka cuando se facturaba una venta, llamaba de vuelta al core por HTTP para obtener los datos, pedía el sellado al servicio de firma y hablaba con el SRI. El core, por su parte, pasó a un nuevo código en FastAPI.
 5. **En parte de vuelta (2026).** El evento de venta empezó a llevar todo lo que necesita la factura, y la firma volvió a vivir dentro del servicio de facturación.
 
+<ArchitectureDiagram name="faclab" />
+
 El último paso deshizo parte de mi propio trabajo, a propósito. Lo conté en [Del monolito a servicios, y en parte de vuelta](/es/notes/monolith-to-services-and-back).
 
 ## El core: Clean Architecture donde se justifica
