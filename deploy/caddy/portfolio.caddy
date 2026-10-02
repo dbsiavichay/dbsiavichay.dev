@@ -1,0 +1,34 @@
+# dbsiavichay.dev: the portfolio. scripts/apply-edge.sh installs this file as
+# /opt/edge/caddy/sites/portfolio.caddy on the VPS, next to the other sites the
+# shared edge serves. The `security` snippet comes from the edge's Caddyfile.
+#
+# The domain is written here rather than read from the edge's .env: the edge's
+# compose passes only the variables of the sites grazia-infra ships, and adding
+# this site must not require editing another project's files.
+
+dbsiavichay.dev {
+	import security
+
+	# Next.js gzips what it serves. Asking it for an uncompressed response lets
+	# Caddy pick the encoding (zstd for current browsers) in one place.
+	encode zstd gzip
+
+	# Static pages carry inline scripts (the RSC payload) that differ per page,
+	# so neither a hash in a static header nor a nonce (which needs rendering on
+	# every request) fits: 'unsafe-inline' is the trade-off, acceptable on a
+	# site with no user input and nothing loaded from third parties. React Flow
+	# positions its nodes with inline style attributes.
+	header {
+		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+	}
+
+	reverse_proxy portfolio-web:3000 {
+		header_up -Accept-Encoding
+	}
+}
+
+www.dbsiavichay.dev {
+	import security
+	redir https://dbsiavichay.dev{uri} permanent
+}

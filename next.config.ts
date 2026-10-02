@@ -7,6 +7,13 @@ const nextConfig: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
   reactStrictMode: true,
+  experimental: {
+    // Prerendered pages are still read from disk. What the server renders on
+    // request (the 404 for an unknown slug) stays in its bounded in-memory
+    // cache instead of being written under .next/server: the container's
+    // filesystem is read-only, and random URLs must not be able to fill a disk.
+    isrFlushToDisk: false,
+  },
 };
 
 // MDX files are imported from `src/content`, never routed, so

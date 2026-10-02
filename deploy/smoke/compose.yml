@@ -1,0 +1,31 @@
+# Smoke overlay for ../compose.yml: the production stack, hardened the same
+# way, behind a stand-in for the edge proxy. It runs on a network of its own and
+# on localhost:8180/8543, so it collides with neither a real `edge` network nor
+# Grazia's smoke stack (8080/8443).
+#
+#   docker compose -f deploy/compose.yml -f deploy/smoke/compose.yml …
+#
+# Relative paths resolve against deploy/, the directory of the first file.
+
+name: portfolio-smoke
+
+services:
+  web:
+    # Built locally (smoke.sh up). The tag still comes from WEB_TAG, so
+    # scripts/deploy.sh can be rehearsed against this stack.
+    image: dbsiavichay-dev:${WEB_TAG:-smoke}
+
+  edge:
+    image: caddy:2-alpine
+    ports:
+      - "127.0.0.1:8180:80"
+      - "127.0.0.1:8543:443"
+    volumes:
+      - ./smoke/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./caddy:/etc/caddy/sites:ro
+    networks: [edge]
+
+networks:
+  edge:
+    name: portfolio-smoke
+    external: false

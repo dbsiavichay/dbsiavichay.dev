@@ -25,3 +25,4 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Server Components by default; a Client Component only where there is real interactivity.
 - Colours come from the tokens in `src/app/globals.css` (Tailwind's default palette is disabled on purpose).
 - `npm run lint`, `npm run typecheck`, `npm run test` and `npm run build` must pass with no warnings. `npm run test:e2e` and `npm run lhci` run against the standalone build, so build first.
+- A change to the `Dockerfile`, `next.config.ts` or anything under `deploy/` is rehearsed with `deploy/smoke/smoke.sh` before committing (see `deploy/README.md`): every push to `master` deploys.
