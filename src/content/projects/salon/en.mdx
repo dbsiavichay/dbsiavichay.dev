@@ -1,0 +1,34 @@
+import { pending } from "@/lib/pending";
+
+{/* The salon is never named. The product name is only used once confirmed. */}
+
+export const meta = {
+  title: "Salon management",
+  tagline: "Appointments, payments and cash for a beauty salon, phone-first",
+  summary:
+    "Appointments, clients, services, cash, expenses and photos for a beauty salon, designed for the phone first, with the business rules enforced where they can't be bypassed.",
+  relation: "client",
+  role: "Sole engineer: product, code and operations",
+  period: { start: 2026, end: 2026 },
+  stack: [
+    "FastAPI",
+    "SQLAlchemy",
+    "PostgreSQL",
+    "React",
+    "TypeScript",
+    "Docker",
+    "Caddy",
+  ],
+  highlights: [
+    "Double booking is impossible: a PostgreSQL GiST exclusion constraint rejects it.",
+    "Prices are frozen in each appointment; payments are append-only and corrections are refunds.",
+    "Multi-tenancy and a staff roster were built, then removed when the business turned out to be a single salon.",
+  ],
+  tier: "standard",
+  order: 3,
+  unconfirmed: [
+    pending("Salon: can the product name be published? Is it in production?"),
+  ],
+};
+
+{/* The case study is written in phase 4. */}

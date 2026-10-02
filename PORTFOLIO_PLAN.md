@@ -27,7 +27,7 @@ Criterio de éxito (pregunta §30 del brief): _si se elimina la sección Stack, 
 
 **Posicionamiento:** construye software para la operación de un negocio (cotizar, producir, facturar, agendar). Parte del modelo de dominio y llega hasta el pipeline de deploy, y elige la arquitectura según el problema, no por moda.
 
-**Borrador del Hero** (se pule en la Fase 3):
+**Hero** (versión final de la Fase 3):
 
 |           | EN                                                                                                                           | ES                                                                                                                                |
 | --------- | ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
@@ -35,7 +35,7 @@ Criterio de éxito (pregunta §30 del brief): _si se elimina la sección Stack, 
 | Título    | I build the software a business runs on.                                                                                     | Construyo el software con el que opera un negocio.                                                                                |
 | Bajada    | Quoting, inventory, invoicing, production — modeled from the domain up and shipped with the pipeline that keeps it reliable. | Cotización, inventario, facturación, producción: modelado desde el dominio y entregado con el pipeline que lo mantiene confiable. |
 | CTAs      | See the work · Get in touch                                                                                                  | Ver proyectos · Contactar                                                                                                         |
-| Ubicación | Based in Ecuador · remote (UTC−5)                                                                                            | En Ecuador · remoto (UTC−5)                                                                                                       |
+| Ubicación | Based in Ecuador · remote, UTC−5                                                                                             | En Ecuador · remoto, UTC−5                                                                                                        |
 
 ## 4. Fuentes de evidencia
 
@@ -100,6 +100,7 @@ Se muestran pocos proyectos, cada uno con un ángulo distinto. Todos pueden conv
 
 - **Qué es:** agenda, clientes, servicios, caja, gastos y fotos para un salón, diseñado phone-first.
 - **Período:** 2026. Único autor. El salón no se nombra.
+- **En el sitio:** se presenta como "Salon management" / "Gestión de salón", con slug `salon`, hasta que se confirme si el nombre del producto se puede publicar (D19).
 - **Ángulos:**
   - **Reglas de negocio donde no se pueden saltar:**
     - el doble agendamiento se impide con un constraint de exclusión GiST en PostgreSQL;
@@ -176,10 +177,11 @@ Todas las rutas existen en `/en` y en `/es`. `/` redirige según cookie > `Accep
 /[lang]                         Home (secciones ancladas)
 /[lang]/projects/maderable      Case study principal
 /[lang]/projects/faclab
-/[lang]/projects/grazia
+/[lang]/projects/salon
 /[lang]/projects/sim
 /[lang]/notes/[slug]            5 engineering notes
 /[lang]/colophon                Cómo está construido este sitio
+/[lang]/opengraph-image         Imagen para compartir, generada en el build
 /sitemap.xml · /robots.txt · /healthz
 ```
 
@@ -188,7 +190,7 @@ Todas las rutas existen en `/en` y en `/es`. `/` redirige según cookie > `Accep
 El orden va de la evidencia a la lista. El Stack queda tarde a propósito.
 
 1. **Navbar:** skip link, anclas, selector de idioma y ⌘K.
-2. **Hero + System Status:** un panel con datos reales de _este_ build (commit, fecha, runtime, edge, pipeline). El sitio se describe a sí mismo.
+2. **Hero + System Status:** un panel con datos reales de _este_ build (commit, fecha, toolchain, render, idiomas, código fuente). El sitio se describe a sí mismo. Las filas de edge y pipeline se agregan en la Fase 6, cuando existan.
 3. **What I Build:** 4 capacidades (Business platforms, Integrations, Distributed systems, Optimization). Cada una enlaza a la evidencia.
 4. **Featured Work:** Maderable destacado; Faclab y Grazia medianos; SIM compacto; franja Open source.
 5. **Engineering Notes.**
@@ -220,7 +222,7 @@ El orden va de la evidencia a la lista. El Stack queda tarde a propósito.
 | Estilos    | Tailwind CSS v4 con tokens en `@theme`                        | Sistema de diseño en CSS, sin runtime                                             |
 | Contenido  | MDX con `@next/mdx`                                           | Case studies como contenido, con componentes React interactivos dentro            |
 | Validación | Zod                                                           | Frontmatter, datos, env de build y datos de visualizaciones                       |
-| Animación  | Motion (`LazyMotion` + `domAnimation`)                        | Bundle pequeño, respeta reduced motion                                            |
+| Animación  | CSS: keyframes al cargar y scroll-driven animations (D17)     | Cero JS; Motion queda reservado para los diagramas de la Fase 5 si hace falta     |
 | Diagramas  | React Flow, solo en 2 diagramas de case studies, cargado lazy | Pan, zoom y nodos inspeccionables donde aportan; el resto son diagramas estáticos |
 | Íconos     | Lucide React                                                  | Tree-shakeable y consistente                                                      |
 | Tests      | Vitest + Testing Library; Playwright + axe; Lighthouse CI     | Unidad, end-to-end, accesibilidad y performance como gates                        |
@@ -234,16 +236,18 @@ src/
 ├── app/[lang]/…          rutas (home, projects/[slug], notes/[slug], colophon) + OG images
 ├── app/{sitemap,robots}.ts · app/healthz/route.ts
 ├── proxy.ts              negociación de idioma en "/"
-├── i18n/                 config + diccionarios en/es (es satisface el tipo de en)
+├── i18n/                 config + diccionarios en/es (es satisface el tipo de en) + tipo Localized<T>
 ├── content/              MDX por slug y por idioma: <tipo>/<slug>/{en,es}.mdx
-├── data/                 perfil, experiencia, capacidades, proceso, tecnologías, social, open source
+├── data/                 perfil, experiencia y educación, capacidades, proceso, stack, open source, evidencia
 ├── lib/                  content (descubrimiento + validación), schemas, env, seo, pending, utils
 └── components/           ui · navigation · command · home · projects · architecture · maderable · faclab · animations
 ```
 
 - **Agregar un proyecto** es agregar una carpeta `content/projects/<slug>/` con `en.mdx` y `es.mdx`. Los slugs se descubren en build, el `meta` se valida con Zod y un test exige ambos idiomas.
+- **Textos:** la copia de interfaz (títulos de sección, botones, hero, about) vive en los diccionarios; el contenido estructurado de `src/data` escribe su texto como `Localized<T>`, así que una traducción faltante es un error de tipos (D18).
+- **Evidencia:** capacidades, pasos del proceso, experiencia y stack apuntan a `project(slug)`, `job(id)` o `thisSite`; un test exige que cada referencia exista.
 - **Pendientes tipados:** `pending("…")` marca un dato sin confirmar. En desarrollo se ve como badge `TODO: CONFIRM WITH DENIS`; en producción se omite. `npm run content:pending` los lista y CI los reporta como warning.
-- **Rendering:** todo SSG. Las islas client se limitan a menú móvil, ⌘K, copiar email, visor del plano de corte, pipeline del pedido y diagramas React Flow. React Flow nunca se carga en la home.
+- **Rendering:** todo SSG. Las islas client se limitan a menú móvil, selector de idioma, ⌘K, copiar email, visor del plano de corte, pipeline del pedido y diagramas React Flow. React Flow nunca se carga en la home. Las islas reciben las clases ya calculadas en el servidor, así que `tailwind-merge` no llega al navegador.
 
 ## 13. Deployment e infraestructura
 
@@ -314,24 +318,28 @@ El VPS nunca hace builds ni guarda credenciales de git: solo descarga imágenes.
 
 ## 16. Registro de decisiones
 
-| #   | Decisión                                                       | Alternativas                             | Razón                                                                                                                            |
-| --- | -------------------------------------------------------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| D1  | Contenedor Next.js `standalone` detrás de Caddy                | `output: 'export'` servido por Caddy     | Es la arquitectura pedida; da optimización de imágenes, OG images y headers. El export estático habría sido válido y más simple. |
-| D2  | Unirse al edge Caddy existente                                 | Caddy propio en el compose del portfolio | Solo un proceso puede ser dueño de 80/443; el edge ya existe para alojar varios sitios.                                          |
-| D3  | Bilingüe con `[lang]` y diccionarios propios                   | next-intl u otra librería                | Dos idiomas estáticos; menos dependencias y menos JS.                                                                            |
-| D4  | MDX con `@next/mdx` y `export const meta` validado con Zod     | Contentlayer, Velite, next-mdx-remote    | Integración oficial, sin build paralelo; Zod da el contrato.                                                                     |
-| D5  | React Flow solo en 2 diagramas, cargado lazy, con fallback SSR | Usarlo en todos los diagramas            | Solo aporta donde hay que explorar una topología; el resto es SVG/HTML estático.                                                 |
-| D6  | Sin formulario de contacto                                     | Formulario + backend de email            | `mailto:` y copiar email resuelven el problema sin infraestructura.                                                              |
-| D7  | Sin DB, Redis ni colas                                         | —                                        | El sitio no tiene estado. Complejidad adecuada al problema.                                                                      |
-| D8  | `pending()` tipado para lo no confirmado                       | Texto libre "TODO"                       | Visible en desarrollo, omitido en producción y listable en CI.                                                                   |
-| D9  | Imagen en GHCR, el VPS solo hace pull                          | Build en el VPS                          | No compite por CPU y memoria con producción; el rollback es cambiar de tag.                                                      |
-| D10 | Maderable sin cifras                                           | Publicar benchmarks                      | Restricción del cliente.                                                                                                         |
-| D11 | ESLint 9                                                       | ESLint 10                                | Los plugins que trae `eslint-config-next` (react, jsx-a11y, import) todavía no declaran soporte para ESLint 10.                  |
-| D12 | Node ≥ 22.12 en local; Node 24 en CI y Docker; jsdom 28        | jsdom 30                                 | jsdom 30 exige Node 22.22+; con la 28 los tests corren igual en local y en CI.                                                   |
-| D13 | Íconos de marca (GitHub, LinkedIn) como SVG propios            | Otra librería de íconos                  | Lucide v1 retiró las marcas; dos SVG de Simple Icons (CC0) no justifican otra dependencia.                                       |
-| D14 | 404 localizada con un catch-all `[lang]/[...missing]`          | `global-not-found` (experimental)        | La 404 se muestra dentro del layout y en el idioma de la ruta, con status 404, sin flags experimentales.                         |
-| D15 | Style guide en `/[lang]/design-system`, solo en desarrollo     | Storybook                                | Revisión visual de tokens y componentes sin otra herramienta; en producción responde 404.                                        |
-| D16 | Paleta de Tailwind desactivada; solo existen los tokens        | Paleta por defecto + tokens              | Ningún color fuera del sistema puede colarse en un componente.                                                                   |
+| #   | Decisión                                                                     | Alternativas                             | Razón                                                                                                                                                                                                  |
+| --- | ---------------------------------------------------------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| D1  | Contenedor Next.js `standalone` detrás de Caddy                              | `output: 'export'` servido por Caddy     | Es la arquitectura pedida; da optimización de imágenes, OG images y headers. El export estático habría sido válido y más simple.                                                                       |
+| D2  | Unirse al edge Caddy existente                                               | Caddy propio en el compose del portfolio | Solo un proceso puede ser dueño de 80/443; el edge ya existe para alojar varios sitios.                                                                                                                |
+| D3  | Bilingüe con `[lang]` y diccionarios propios                                 | next-intl u otra librería                | Dos idiomas estáticos; menos dependencias y menos JS.                                                                                                                                                  |
+| D4  | MDX con `@next/mdx` y `export const meta` validado con Zod                   | Contentlayer, Velite, next-mdx-remote    | Integración oficial, sin build paralelo; Zod da el contrato.                                                                                                                                           |
+| D5  | React Flow solo en 2 diagramas, cargado lazy, con fallback SSR               | Usarlo en todos los diagramas            | Solo aporta donde hay que explorar una topología; el resto es SVG/HTML estático.                                                                                                                       |
+| D6  | Sin formulario de contacto                                                   | Formulario + backend de email            | `mailto:` y copiar email resuelven el problema sin infraestructura.                                                                                                                                    |
+| D7  | Sin DB, Redis ni colas                                                       | —                                        | El sitio no tiene estado. Complejidad adecuada al problema.                                                                                                                                            |
+| D8  | `pending()` tipado para lo no confirmado                                     | Texto libre "TODO"                       | Visible en desarrollo, omitido en producción y listable en CI.                                                                                                                                         |
+| D9  | Imagen en GHCR, el VPS solo hace pull                                        | Build en el VPS                          | No compite por CPU y memoria con producción; el rollback es cambiar de tag.                                                                                                                            |
+| D10 | Maderable sin cifras                                                         | Publicar benchmarks                      | Restricción del cliente.                                                                                                                                                                               |
+| D11 | ESLint 9                                                                     | ESLint 10                                | Los plugins que trae `eslint-config-next` (react, jsx-a11y, import) todavía no declaran soporte para ESLint 10.                                                                                        |
+| D12 | Node ≥ 22.12 en local; Node 24 en CI y Docker; jsdom 28                      | jsdom 30                                 | jsdom 30 exige Node 22.22+; con la 28 los tests corren igual en local y en CI.                                                                                                                         |
+| D13 | Íconos de marca (GitHub, LinkedIn) como SVG propios                          | Otra librería de íconos                  | Lucide v1 retiró las marcas; dos SVG de Simple Icons (CC0) no justifican otra dependencia.                                                                                                             |
+| D14 | 404 localizada con un catch-all `[lang]/[...missing]`                        | `global-not-found` (experimental)        | La 404 se muestra dentro del layout y en el idioma de la ruta, con status 404, sin flags experimentales.                                                                                               |
+| D15 | Style guide en `/[lang]/design-system`, solo en desarrollo                   | Storybook                                | Revisión visual de tokens y componentes sin otra herramienta; en producción responde 404.                                                                                                              |
+| D16 | Paleta de Tailwind desactivada; solo existen los tokens                      | Paleta por defecto + tokens              | Ningún color fuera del sistema puede colarse en un componente.                                                                                                                                         |
+| D17 | Animaciones de la home en CSS (keyframes + scroll-driven)                    | Motion en la home                        | Sin JS ni hidratación para animar. La entrada al cargar no toca el H1 ni la bajada (LCP); al hacer scroll solo hay desplazamiento, nunca opacidad, para no bajar el contraste a mitad de la animación. |
+| D18 | Contenido estructurado con `Localized<T>` en `src/data`                      | Todo el texto en los diccionarios        | Cada hecho (fechas, stack, evidencia) queda junto a su texto en ambos idiomas; el tipo exige las dos traducciones.                                                                                     |
+| D19 | El proyecto de Grazia se publica como "Gestión de salón" (slug `salon`)      | Usar el nombre del producto              | Publicar el nombre está pendiente de confirmación; el slug no lo expone.                                                                                                                               |
+| D20 | En producción, un rango de fechas con un extremo sin confirmar no se muestra | Mostrar solo el inicio                   | "2008" solo se lee como año de graduación y "oct 2021" solo como un mes: sería un dato falso.                                                                                                          |
 
 ## 17. Pendientes: `TODO: CONFIRM WITH DENIS`
 
@@ -343,6 +351,7 @@ El VPS nunca hace builds ni guarda credenciales de git: solo descarga imágenes.
 - [ ] Faclab: ¿está en producción o con usuarios? `TODO: CONFIRM WITH DENIS`
 - [ ] Grazia: ¿se puede publicar el nombre del producto? ¿está en producción? `TODO: CONFIRM WITH DENIS`
 - [ ] Maderable: ¿se puede enlazar al sitio público del negocio? `TODO: CONFIRM WITH DENIS`
+- [ ] Nivel de inglés actual (el CV de 2024 dice intermedio), o no mostrarlo. `TODO: CONFIRM WITH DENIS`
 - [ ] Foto para la sección About (o ninguna). `TODO: CONFIRM WITH DENIS`
 - [ ] CV actualizado en PDF para descarga (o no ofrecer descarga). `TODO: CONFIRM WITH DENIS`
 - [ ] Años de la Ingeniería en Sistemas en ESPOCH (las fuentes dicen 2013 y 2015). `TODO: CONFIRM WITH DENIS`
@@ -356,7 +365,7 @@ Cada fase se trabaja en su propia rama (`portfolio/fase-N-<nombre>`), termina co
 | -------------------------- | ------------------------------------------------------------------------- | --------- |
 | 1. Discovery               | Este documento                                                            | ✅        |
 | 2. Design system           | Retiro de Django, scaffold de Next.js, tooling, tokens y componentes base | ✅        |
-| 3. Core                    | Home bilingüe completa                                                    | Pendiente |
+| 3. Core                    | Home bilingüe completa                                                    | ✅        |
 | 4. Case studies            | Maderable, Faclab, Grazia, SIM + notas                                    | Pendiente |
 | 5. Interactive engineering | Plano de corte, pipeline del pedido, diagramas, ⌘K                        | Pendiente |
 | 6. Deployment              | Dockerfile, compose, Caddy, CI/CD, documentación                          | Pendiente |

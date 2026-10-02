@@ -1,0 +1,35 @@
+import { pending } from "@/lib/pending";
+
+export const meta = {
+  title: "Maderable",
+  tagline:
+    "Cotización, optimización de corte y producción para un taller de tableros",
+  summary:
+    "El sistema de un taller de tableros de melamina en Ecuador, desde el despiece del cliente hasta el despacho: optimización de corte, cotización, revisión por el cliente, órdenes, taller e impresión de etiquetas.",
+  relation: "client",
+  role: "Ingeniería completa, desde el modelo de dominio hasta el deploy",
+  period: { start: 2025, end: "present" },
+  stack: [
+    "FastAPI",
+    "PostgreSQL",
+    "OR-Tools CP-SAT",
+    "Rust",
+    "React",
+    "TypeScript",
+    "Docker Compose",
+    "Caddy",
+  ],
+  highlights: [
+    "Optimiza lo que paga el cliente, no la colocación: el medio tablero es un bin real.",
+    "Búsqueda heurística en guillotina, un cierre exacto con CP-SAT y un kernel en Rust que devuelve exactamente lo mismo que la referencia en Python.",
+    "Determinista por diseño: los presupuestos de búsqueda se cuentan en unidades de trabajo, no en segundos.",
+    "La cotización viva se convierte en una orden inmutable, y un agente en Windows imprime sus etiquetas en las impresoras del taller.",
+  ],
+  tier: "featured",
+  order: 1,
+  unconfirmed: [
+    pending("Maderable: can the site link to the shop's public website?"),
+  ],
+};
+
+{/* El case study se escribe en la fase 4. */}

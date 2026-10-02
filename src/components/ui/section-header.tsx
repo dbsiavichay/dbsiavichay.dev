@@ -32,7 +32,7 @@ export function SectionHeader({
         className,
       )}
     >
-      <p className="flex items-center gap-3 label-mono text-fg-subtle lg:pt-3">
+      <p className="flex items-center gap-3 self-start label-mono text-fg-subtle lg:pt-3">
         <span className="text-accent-text">{index}</span>
         <span aria-hidden="true" className="h-px w-6 bg-line-strong" />
         <span>{eyebrow}</span>

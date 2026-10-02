@@ -1,3 +1,4 @@
+import createMDX from "@next/mdx";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -8,4 +9,8 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
 };
 
-export default nextConfig;
+// MDX files are imported from `src/content`, never routed, so
+// `pageExtensions` keeps its default.
+const withMDX = createMDX();
+
+export default withMDX(nextConfig);

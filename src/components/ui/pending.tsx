@@ -29,3 +29,20 @@ export function Pending({ value, className }: PendingProps) {
     </span>
   );
 }
+
+type PendingListProps = {
+  values: readonly PendingValue[] | undefined;
+  className?: string;
+};
+
+/** Several unconfirmed facts about one thing, stacked. Nothing in production. */
+export function PendingList({ values, className }: PendingListProps) {
+  if (!values?.length || !shouldShowPending()) return null;
+  return (
+    <div className={cn("flex flex-col items-start gap-2", className)}>
+      {values.map((value) => (
+        <Pending key={value.note} value={value} />
+      ))}
+    </div>
+  );
+}

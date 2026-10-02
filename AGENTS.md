@@ -17,7 +17,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Never invent facts: companies, roles, dates, metrics, clients, technologies or years of experience. Anything unconfirmed uses `pending("what needs confirming")` from `src/lib/pending.ts` (or the literal marker `TODO: CONFIRM WITH DENIS` in prose). Pending facts render as a badge in development and are omitted in production; `npm run content:pending` lists them.
 - Maderable is a client: its name and architecture may be published; figures and benchmarks may not, nor the shop's customers or the commercial name of its existing systems.
 - Grazia's salon is never named.
-- Every interface string lives in both `src/i18n/dictionaries/en.ts` and `es.ts` (Spanish is neutral, `tú`). Long-form content has an `en.mdx` and an `es.mdx`.
+- Every interface string lives in both `src/i18n/dictionaries/en.ts` and `es.ts` (Spanish is neutral, `tú`). Structured content in `src/data` writes its text as `Localized<T>` (both languages required by type). Long-form content has an `en.mdx` and an `es.mdx`.
+- Claims point to their evidence (`project(slug)`, `job(id)`, `thisSite` from `src/data/evidence.ts`); tests reject references to anything that doesn't exist or isn't confirmed.
 
 ## Code
 
