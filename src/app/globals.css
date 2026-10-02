@@ -1,0 +1,278 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens — "Engineering meets Product".
+ *
+ * Dark is the design target; light follows the visitor's system preference.
+ * Every text colour pair is ≥ 4.5:1 (WCAG AA) on canvas, surface and raised;
+ * `line-strong` is ≥ 3:1 on canvas because it outlines interactive controls
+ * (WCAG 1.4.11). `line` is a decorative hairline and is meant to be quiet.
+ */
+:root {
+  color-scheme: dark;
+
+  --canvas: #0a0b0d;
+  --surface: #101215;
+  --raised: #15181c;
+  --line: #22262c;
+  --line-strong: #5f6670;
+  --fg: #ecebe8;
+  --fg-muted: #a3a9b2;
+  --fg-subtle: #868e99;
+  --accent: #f2a541;
+  --accent-hover: #f6b862;
+  --on-accent: #121212;
+  --accent-text: #f2a541;
+  --accent-soft: rgb(242 165 65 / 0.12);
+  --focus: #f2a541;
+  --grid: rgb(255 255 255 / 0.035);
+  --signal-info: #6cc4d9;
+  --signal-ok: #7fc98a;
+  --signal-error: #e7816b;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+
+    --canvas: #f6f5f2;
+    --surface: #ffffff;
+    --raised: #fbfaf8;
+    --line: #e2e0db;
+    --line-strong: #8a867d;
+    --fg: #15171a;
+    --fg-muted: #4a5059;
+    --fg-subtle: #5f656e;
+    --accent: #e99a2c;
+    --accent-hover: #d98a1c;
+    --on-accent: #15171a;
+    --accent-text: #8f4c00;
+    --accent-soft: rgb(233 154 44 / 0.14);
+    --focus: #8f4c00;
+    --grid: rgb(0 0 0 / 0.045);
+    --signal-info: #1d6f83;
+    --signal-ok: #2c7337;
+    --signal-error: #a8402a;
+  }
+}
+
+@theme {
+  /* Only the palette above exists: no stray Tailwind colours. */
+  --color-*: initial;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  --font-sans:
+    var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    sans-serif;
+  --font-mono:
+    var(--font-geist-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  /* Fluid type scale. Body copy stays fixed; headings grow with the viewport. */
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1.125rem;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.375rem;
+  --text-base: 1rem;
+  --text-base--line-height: 1.65;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.7;
+  --text-xl: clamp(1.25rem, 1.15rem + 0.45vw, 1.5rem);
+  --text-xl--line-height: 1.35;
+  --text-2xl: clamp(1.5rem, 1.3rem + 0.9vw, 2rem);
+  --text-2xl--line-height: 1.25;
+  --text-2xl--letter-spacing: -0.015em;
+  --text-3xl: clamp(1.875rem, 1.45rem + 1.9vw, 2.75rem);
+  --text-3xl--line-height: 1.12;
+  --text-3xl--letter-spacing: -0.025em;
+  --text-display: clamp(2.25rem, 1.35rem + 4.2vw, 4.75rem);
+  --text-display--line-height: 1.02;
+  --text-display--letter-spacing: -0.035em;
+
+  /* Section rhythm and the site container. */
+  --spacing-section: clamp(4.5rem, 3rem + 6vw, 8.5rem);
+  --container-site: 75rem;
+  --container-prose: 42rem;
+
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-raised: var(--raised);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-on-accent: var(--on-accent);
+  --color-accent-text: var(--accent-text);
+  --color-accent-soft: var(--accent-soft);
+  --color-focus: var(--focus);
+  --color-signal-info: var(--signal-info);
+  --color-signal-ok: var(--signal-ok);
+  --color-signal-error: var(--signal-error);
+}
+
+@layer base {
+  html {
+    background-color: var(--canvas);
+    color: var(--fg);
+    -webkit-text-size-adjust: 100%;
+    /* Anchored sections land below the sticky header. */
+    scroll-padding-top: 5rem;
+  }
+
+  body {
+    min-height: 100dvh;
+    font-family: var(--font-sans);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background-color: var(--accent);
+    color: var(--on-accent);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* Monospaced, tracked, uppercase: the labels of a technical drawing. */
+@utility label-mono {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: var(--text-xs--line-height);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* The drafting grid behind the hero. Two 1px lines, not a decorative gradient. */
+@utility blueprint-grid {
+  background-image:
+    linear-gradient(to right, var(--grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* Long-form typography for MDX case studies and notes. */
+@utility prose {
+  max-width: var(--container-prose);
+  color: var(--fg-muted);
+  font-size: var(--text-lg);
+  line-height: var(--text-lg--line-height);
+
+  & :where(h2) {
+    margin-top: 3.5rem;
+    margin-bottom: 1rem;
+    color: var(--fg);
+    font-size: var(--text-2xl);
+    line-height: var(--text-2xl--line-height);
+    letter-spacing: var(--text-2xl--letter-spacing);
+    font-weight: 600;
+  }
+
+  & :where(h3) {
+    margin-top: 2.25rem;
+    margin-bottom: 0.75rem;
+    color: var(--fg);
+    font-size: var(--text-xl);
+    line-height: var(--text-xl--line-height);
+    font-weight: 600;
+  }
+
+  & :where(p, ul, ol, blockquote, pre, table, figure) {
+    margin-block: 1.25rem;
+  }
+
+  & :where(strong) {
+    color: var(--fg);
+    font-weight: 600;
+  }
+
+  & :where(a) {
+    color: var(--fg);
+    text-decoration: underline;
+    text-decoration-color: var(--line-strong);
+    text-underline-offset: 0.25em;
+  }
+
+  & :where(a:hover) {
+    text-decoration-color: var(--accent);
+  }
+
+  & :where(ul) {
+    list-style: square;
+    padding-left: 1.25rem;
+  }
+
+  & :where(ol) {
+    list-style: decimal;
+    padding-left: 1.5rem;
+  }
+
+  & :where(li) {
+    margin-block: 0.4rem;
+    padding-left: 0.25rem;
+  }
+
+  & :where(li)::marker {
+    color: var(--fg-subtle);
+  }
+
+  & :where(blockquote) {
+    border-left: 2px solid var(--accent);
+    padding-left: 1.25rem;
+    color: var(--fg);
+  }
+
+  & :where(code):not(:where(pre code)) {
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background-color: var(--surface);
+    padding: 0.1em 0.35em;
+    color: var(--fg);
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+  }
+
+  & :where(pre) {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background-color: var(--surface);
+    padding: 1rem 1.25rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    line-height: 1.6;
+  }
+
+  & :where(hr) {
+    margin-block: 3rem;
+    border-color: var(--line);
+  }
+}
