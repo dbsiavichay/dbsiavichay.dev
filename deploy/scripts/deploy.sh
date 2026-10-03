@@ -92,7 +92,8 @@ rollback() {
 # an unguarded failure would leave .env naming a tag that never ran, and the
 # next deploy would take it as the version to roll back to.
 if ! docker compose pull web; then
-    echo "!! Could not pull ${TAG}. Does it exist in GHCR, and can this host read the package?"
+    echo "!! Could not pull ${TAG}. Does it exist in GHCR, and is the package still public?"
+    echo "!! Never docker login ghcr.io on this host: it would replace Grazia's credential."
     rollback
 fi
 if ! docker compose up -d web; then

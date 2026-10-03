@@ -4,6 +4,7 @@ import { profile } from "@/data/profile";
 import { locales } from "@/i18n/config";
 import { getI18n } from "@/i18n/server";
 import { formatBuildTime, getBuildInfo } from "@/lib/build-info";
+import { SEPARATOR } from "@/lib/separator";
 import { cn } from "@/lib/utils";
 
 const linkClass =
@@ -27,7 +28,7 @@ export async function SystemStatus({ className }: { className?: string }) {
           <span className="sr-only">, {t.viewCommit}</span>
         </a>
       ) : (
-        `${build.shortSha} · ${t.localBuild}`
+        `${build.shortSha}${SEPARATOR}${t.localBuild}`
       ),
     },
     {
@@ -38,10 +39,10 @@ export async function SystemStatus({ className }: { className?: string }) {
     },
     {
       label: t.toolchain,
-      value: `Next.js ${build.nextVersion} · Node ${build.nodeVersion}`,
+      value: `Next.js ${build.nextVersion}${SEPARATOR}Node ${build.nodeVersion}`,
     },
     { label: t.rendering, value: t.renderingValue },
-    { label: t.languages, value: locales.join(" · ") },
+    { label: t.languages, value: locales.join(SEPARATOR) },
     {
       label: t.source,
       value: (

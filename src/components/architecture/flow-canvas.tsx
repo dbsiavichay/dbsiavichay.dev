@@ -32,6 +32,7 @@ import {
   type EdgeKind,
   type Side,
 } from "@/lib/diagram";
+import { SEPARATOR } from "@/lib/separator";
 
 import { EdgeShape, GroupShape, NodeShape, type ShapeState } from "./shapes";
 
@@ -390,7 +391,7 @@ export default function FlowCanvas({
                     ? `→ ${names.get(edge.to.node)}`
                     : `← ${names.get(edge.from.node)}`,
                 )
-                .join(" · ")}
+                .join(SEPARATOR)}
             </p>
           </>
         ) : (

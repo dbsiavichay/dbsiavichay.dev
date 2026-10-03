@@ -73,6 +73,20 @@ test.describe("responsive layout", () => {
             document.documentElement.clientWidth,
         );
         expect(overflow, `${path} at ${width}px`).toBeLessThanOrEqual(0);
+        // Inside the page, a region may scroll sideways only on purpose: a
+        // wide diagram is a named group a keyboard can focus and scroll. Any
+        // other overflow hides content behind an edge nobody knows to drag.
+        const clipped = await page.evaluate(() =>
+          [...document.querySelectorAll<HTMLElement>("main *")]
+            .filter(
+              (el) =>
+                /auto|scroll/.test(getComputedStyle(el).overflowX) &&
+                el.scrollWidth > el.clientWidth + 1,
+            )
+            .filter((el) => !(el.tabIndex === 0 && el.ariaLabel))
+            .map((el) => el.outerHTML.slice(0, 120)),
+        );
+        expect(clipped, `${path} at ${width}px`).toEqual([]);
         await testInfo.attach(
           `${path.slice(1).replaceAll("/", "-")}-${width}.png`,
           {

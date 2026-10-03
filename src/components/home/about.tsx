@@ -4,6 +4,7 @@ import { SectionHeader } from "@/components/ui/section-header";
 import { profile } from "@/data/profile";
 import { getI18n } from "@/i18n/server";
 import { isPending } from "@/lib/pending";
+import { SEPARATOR } from "@/lib/separator";
 
 export async function About() {
   const { locale, dict } = await getI18n();
@@ -34,7 +35,9 @@ export async function About() {
             <div>
               <dt className="label-mono text-fg-subtle">{t.facts.basedIn}</dt>
               <dd className="mt-1 text-fg">
-                {profile.country[locale]} · {profile.timezone}
+                {profile.country[locale]}
+                {SEPARATOR}
+                {profile.timezone}
               </dd>
             </div>
             <div>
