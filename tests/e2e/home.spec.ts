@@ -65,6 +65,22 @@ test.describe("home", () => {
     const panel = page.getByRole("region", { name: "This build" });
     await expect(panel).toContainText(/Next\.js \d+\.\d+\.\d+/);
     await expect(panel).toContainText(/\d{4}-\d{2}-\d{2} \d{2}:\d{2} UTC/);
+    // A terminal on screen, a definition list to a screen reader: the
+    // commands that print the output are hidden from it.
+    await expect(panel.getByRole("term")).toHaveText([
+      "commit",
+      "built",
+      "toolchain",
+      "rendering",
+      "languages",
+      "source",
+    ]);
+    await expect(
+      panel.locator("[aria-hidden='true']", { hasText: "build-info" }),
+    ).toHaveCount(1);
+    await expect(
+      panel.getByRole("link", { name: "How this site is built" }),
+    ).toHaveAttribute("href", "/en/colophon");
   });
 
   test("project cards link to their case studies", async ({ page }) => {
@@ -74,6 +90,15 @@ test.describe("home", () => {
       work.getByRole("link", { name: "Maderable", exact: true }),
     ).toHaveAttribute("href", "/es/projects/maderable");
     await expect(work.getByRole("article")).toHaveCount(4);
+  });
+
+  test("open source packages are named, not their install command", async ({
+    page,
+  }) => {
+    await page.goto("/en");
+    const packages = page.locator("#work").getByRole("heading", { level: 4 });
+    await expect(packages.first()).toHaveAccessibleName("django-superadmin");
+    await expect(packages.first()).toContainText("pip install");
   });
 
   test("the email can be copied", async ({ page, context }, testInfo) => {

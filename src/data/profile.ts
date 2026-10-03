@@ -8,6 +8,20 @@ type Language = { name: Localized; level: Confirmable<Localized> };
 
 type Photo = { image: StaticImageData; alt: Localized };
 
+type Workspace = {
+  keyboard: { model: string; layout: number; switches: string };
+  /**
+   * A photo of the real desk, encoded like the portrait (D34). Once there is
+   * one, About shows it instead of the keyboard drawing.
+   */
+  photo?: Photo;
+};
+
+/** Denis's desk. Confirmed by Denis (2026-10-03); there is no photo yet. */
+const workspace: Workspace = {
+  keyboard: { model: "Keychron K2", layout: 0.75, switches: "Brown" },
+};
+
 /** Who Denis is and how to reach him. Sources: CV (2024), LinkedIn, Denis. */
 export const profile = {
   name: "Denis Siavichay",
@@ -45,4 +59,5 @@ export const profile = {
     },
   } satisfies Photo,
   resume: pending("an updated CV in PDF to offer for download, or none"),
+  workspace,
 };

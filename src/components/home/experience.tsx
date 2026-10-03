@@ -1,14 +1,15 @@
-import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Pending, PendingList } from "@/components/ui/pending";
 import { Section } from "@/components/ui/section";
 import { SectionHeader } from "@/components/ui/section-header";
+import { StackLine } from "@/components/ui/stack-line";
 import { education, experience, type ExperienceEntry } from "@/data/experience";
 import type { Locale } from "@/i18n/config";
 import type { Localized } from "@/i18n/localized";
 import { getI18n } from "@/i18n/server";
 import { isPending, shouldShowPending, type Confirmable } from "@/lib/pending";
 import { SEPARATOR } from "@/lib/separator";
+import { cn } from "@/lib/utils";
 
 import { DateRange } from "./date-range";
 import type { EvidenceContext } from "./evidence";
@@ -46,9 +47,24 @@ export async function Experience({ evidence }: { evidence: EvidenceContext }) {
           <li
             key={entry.id}
             id={`experience-${entry.id}`}
-            className="grid reveal gap-4 border-t border-line py-8 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] md:gap-12 lg:py-10"
+            className="group relative grid gap-4 py-8 pl-8 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] md:gap-12 md:pl-12 lg:py-10"
           >
-            <div>
+            {/* A rail like `git log --graph`: one commit per job, filled
+                while it lasts. It stays put while the entries settle. */}
+            <span
+              aria-hidden="true"
+              className="absolute top-0 bottom-0 left-[5px] w-px bg-line-strong group-first:top-[43px] group-last:bottom-auto group-last:h-[43px] lg:group-first:top-[51px] lg:group-last:h-[51px]"
+            />
+            <span
+              aria-hidden="true"
+              className={cn(
+                "absolute top-[38px] left-0 size-[11px] rounded-full lg:top-[46px]",
+                entry.period.end === "present"
+                  ? "bg-accent"
+                  : "border border-line-strong bg-canvas",
+              )}
+            />
+            <div className="reveal">
               <p className="font-mono text-sm text-fg">
                 <DateRange
                   range={entry.period}
@@ -62,7 +78,7 @@ export async function Experience({ evidence }: { evidence: EvidenceContext }) {
                 </p>
               ) : null}
             </div>
-            <div className="max-w-3xl">
+            <div className="max-w-3xl reveal">
               <h3 className="text-xl font-semibold text-balance text-fg">
                 <Text value={entry.role} locale={locale} />
                 <span className="font-normal text-fg-muted">
@@ -92,13 +108,7 @@ export async function Experience({ evidence }: { evidence: EvidenceContext }) {
                 </ul>
               ) : null}
               {entry.stack.length > 0 ? (
-                <ul className="mt-5 flex flex-wrap gap-2">
-                  {entry.stack.map((item) => (
-                    <li key={item}>
-                      <Badge>{item}</Badge>
-                    </li>
-                  ))}
-                </ul>
+                <StackLine items={entry.stack} className="mt-5" />
               ) : null}
               {entry.evidence.length > 0 ? (
                 <div className="mt-5 flex flex-wrap items-baseline gap-x-3 gap-y-1">

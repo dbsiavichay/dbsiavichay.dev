@@ -12,9 +12,13 @@ export async function Hero() {
   return (
     <section
       aria-labelledby="hero-title"
-      className="border-b border-line blueprint-grid"
+      className="relative overflow-hidden border-b border-line"
     >
-      <Container className="grid gap-12 py-16 sm:py-20 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-end lg:gap-16 lg:py-28">
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 blueprint-grid blueprint-fade"
+      />
+      <Container className="relative grid gap-12 py-16 sm:py-20 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-center lg:gap-12 lg:py-28 xl:gap-16">
         <div>
           <p className="label-mono text-fg-subtle motion-safe:animate-rise">
             {dict.hero.eyebrow}
@@ -43,7 +47,14 @@ export async function Hero() {
             {dict.hero.location}
           </p>
         </div>
-        <SystemStatus className="motion-safe:animate-rise motion-safe:[animation-delay:280ms]" />
+        <div className="relative">
+          {/* The lamp: only in the dark theme, and only beside the text. */}
+          <div
+            aria-hidden="true"
+            className="absolute -inset-x-[90px] -inset-y-[110px] hidden lamp-glow lg:block"
+          />
+          <SystemStatus className="relative motion-safe:animate-rise motion-safe:[animation-delay:200ms]" />
+        </div>
       </Container>
     </section>
   );

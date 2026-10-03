@@ -124,6 +124,14 @@ export const es = {
       education: "Educación",
       educationValue: "Máster en Ingeniería de Software, UNIR",
     },
+    workspace: {
+      title: "Espacio de trabajo",
+      lede: "Fuera del trabajo en sí: teclados mecánicos.",
+      keyboard: "Teclado",
+      layout: "Formato",
+      switches: "Switches",
+      caption: "El teclado, dibujado como un plano de corte.",
+    },
   },
   contact: {
     eyebrow: "Contacto",

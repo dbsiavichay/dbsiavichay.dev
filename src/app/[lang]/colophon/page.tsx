@@ -65,6 +65,7 @@ export default async function ColophonPage() {
       <ArticleHeader
         back={{ href: `/${locale}`, label: t.back }}
         breadcrumbLabel={dict.article.breadcrumb}
+        path="colophon"
         eyebrow={
           <>
             <span className="text-accent-text">{t.eyebrow}</span>

@@ -22,6 +22,10 @@ function preload() {
 
 const subscribe = () => () => {};
 
+// The `Kbd` look without importing it: `cn` stays on the server.
+const keyClass =
+  "inline-flex h-5 min-w-5 items-center justify-center rounded-[5px] px-1 font-mono text-xs keycap group-active:keycap-pressed";
+
 /** Apple keyboards say ⌘; the rest say Ctrl. The server renders ⌘. */
 function isApple() {
   const platform =
@@ -83,15 +87,14 @@ export function CommandMenu({
         }}
         onPointerEnter={preload}
         onFocus={preload}
-        className="inline-flex size-11 items-center justify-center gap-2 rounded-md text-fg transition-colors hover:bg-surface md:h-9 md:w-auto md:border md:border-line-strong md:px-2.5 md:text-fg-muted md:hover:bg-transparent md:hover:text-fg"
+        className="group inline-flex size-11 items-center justify-center gap-2 rounded-md text-fg transition-colors hover:bg-surface md:h-9 md:w-auto md:border md:border-line-strong md:px-2.5 md:text-fg-muted md:hover:bg-transparent md:hover:text-fg"
       >
         <Search aria-hidden="true" className="size-4" />
-        <kbd
-          aria-hidden="true"
-          className="hidden h-5 w-11 items-center justify-center rounded-sm border border-line bg-raised font-mono text-xs text-fg-muted lg:inline-flex"
-        >
-          {apple ? "⌘K" : "Ctrl K"}
-        </kbd>
+        {/* Keycaps for the shortcut; they sink when the button is pressed. */}
+        <span aria-hidden="true" className="hidden gap-1 lg:inline-flex">
+          <kbd className={keyClass}>{apple ? "⌘" : "Ctrl"}</kbd>
+          <kbd className={keyClass}>K</kbd>
+        </span>
       </button>
 
       {mounted ? (

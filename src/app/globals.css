@@ -54,6 +54,10 @@
   --term-muted: #a39b8e;
   --term-accent: #f2a541;
   --term-ok: #7fc98a;
+  /* Decorative: the window's three dots and the keycap "logo" in its output. */
+  --term-dot: #3b3732;
+  --term-key: #1f1d1a;
+  --term-key-edge: #4a453e;
   --syn-string: #a9c18c;
   --syn-keyword: #d99c90;
   --syn-function: #e3c48f;
@@ -144,6 +148,24 @@
       translate: 0 0.75rem;
     }
   }
+
+  /* Terminal output is printed, not floated in: lines appear in place. */
+  --animate-appear: appear 0.12s linear both;
+
+  @keyframes appear {
+    from {
+      opacity: 0;
+    }
+  }
+
+  /* A terminal cursor: five blinks, then it stays lit (WCAG 2.2.2: < 5 s). */
+  --animate-blink: blink 0.9s steps(1, end) 5;
+
+  @keyframes blink {
+    50% {
+      opacity: 0;
+    }
+  }
 }
 
 @theme inline {
@@ -177,6 +199,9 @@
   --color-term-muted: var(--term-muted);
   --color-term-accent: var(--term-accent);
   --color-term-ok: var(--term-ok);
+  --color-term-dot: var(--term-dot);
+  --color-term-key: var(--term-key);
+  --color-term-key-edge: var(--term-key-edge);
   --color-syn-string: var(--syn-string);
   --color-syn-keyword: var(--syn-keyword);
   --color-syn-function: var(--syn-function);
@@ -259,6 +284,59 @@
   background-size: 48px 48px;
 }
 
+/* The grid fades out towards the edges of the hero instead of ending at them. */
+@utility blueprint-fade {
+  mask-image: radial-gradient(ellipse at 30% 40%, black 30%, transparent 78%);
+}
+
+/*
+ * The lamp behind the terminal, like a monitor's bias light. The site's only
+ * gradient (D39); `--glow` is transparent in the light theme.
+ */
+@utility lamp-glow {
+  background-image: radial-gradient(closest-side, var(--glow), transparent);
+}
+
+/*
+ * A low-profile keycap: a face over its edge. The edge is a shadow, not a
+ * border, so a pressed key sinks into it without moving anything around it.
+ * `--keycap-depth` makes a larger key deeper. `keycap-pressed` only sets
+ * variables, so it wins over `keycap` whatever order the CSS lands in.
+ */
+@utility keycap {
+  border: 1px solid var(--keycap-edge);
+  background-color: var(--keycap);
+  color: var(--keycap-fg);
+  translate: 0 var(--keycap-travel, 0px);
+  box-shadow: 0 calc(var(--keycap-depth, 2px) - var(--keycap-travel, 0px)) 0
+    var(--keycap-edge);
+  transition-property: translate, box-shadow, background-color, border-color;
+  transition-duration: 80ms;
+  transition-timing-function: ease-out;
+}
+
+@utility keycap-pressed {
+  --keycap-travel: var(--keycap-depth, 2px);
+  --keycap: var(--keycap-pressed);
+}
+
+/*
+ * A command typed once, one character per step: the element sets `--chars`
+ * to its length. It is uncovered, never resized, so nothing around it moves.
+ */
+@utility animate-type {
+  animation: type 0.6s steps(var(--chars, 10)) both;
+}
+
+@keyframes type {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0);
+  }
+}
+
 /*
  * Content settles into place as it scrolls in, driven by the scroll position
  * rather than a script. It moves but never fades, so text contrast is never
@@ -290,6 +368,7 @@
   color: var(--fg-muted);
   font-size: var(--text-lg);
   line-height: var(--text-lg--line-height);
+  counter-reset: section;
 
   & :where(h2):not(:where(.not-prose, .not-prose *)) {
     margin-top: 3.5rem;
@@ -299,6 +378,22 @@
     line-height: var(--text-2xl--line-height);
     letter-spacing: var(--text-2xl--letter-spacing);
     font-weight: 600;
+  }
+
+  /*
+   * "02 / The problem…": numbered like the contents beside it. The number is
+   * drawn, not written: its alternative text is empty, so a screen reader
+   * reads the heading alone, and the ids and the contents don't change.
+   */
+  & :where(h2):not(:where(.not-prose, .not-prose *))::before {
+    counter-increment: section;
+    content: counter(section, decimal-leading-zero) " / " / "";
+    margin-right: 0.25em;
+    color: var(--fg-subtle);
+    font-family: var(--font-mono);
+    font-size: 0.65em;
+    font-weight: 400;
+    letter-spacing: 0;
   }
 
   & :where(h3):not(:where(.not-prose, .not-prose *)) {
@@ -368,12 +463,14 @@
     font-size: 0.875em;
   }
 
+  /* Code is a screen, like the terminal: an editor's colours in both themes. */
   & :where(pre):not(:where(.not-prose, .not-prose *)) {
     overflow-x: auto;
-    border: 1px solid var(--line);
+    border: 1px solid var(--term-line);
     border-radius: 8px;
-    background-color: var(--surface);
+    background-color: var(--term);
     padding: 1rem 1.25rem;
+    color: var(--term-fg);
     font-family: var(--font-mono);
     font-size: var(--text-sm);
     line-height: 1.6;

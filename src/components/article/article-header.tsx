@@ -8,6 +8,8 @@ type ArticleHeaderProps = {
   /** Where the reader came from: the home section that lists this page. */
   back: { href: string; label: string };
   breadcrumbLabel: string;
+  /** Where the page lives in this repository's content: "projects/faclab". */
+  path: string;
   /** Mono labels above the title: kind, relation, reading time… */
   eyebrow: ReactNode;
   title: string;
@@ -19,11 +21,14 @@ type ArticleHeaderProps = {
 export function ArticleHeader({
   back,
   breadcrumbLabel,
+  path,
   eyebrow,
   title,
   lede,
   children,
 }: ArticleHeaderProps) {
+  const leaf = path.slice(path.lastIndexOf("/") + 1);
+  const parent = path.slice(0, path.length - leaf.length);
   return (
     <header className="border-b border-line blueprint-grid">
       <Container className="py-10 sm:py-14 lg:py-20">
@@ -37,6 +42,11 @@ export function ArticleHeader({
           </Link>
         </nav>
         <div className="mt-10 flex flex-wrap items-center gap-x-3 gap-y-2 label-mono text-fg-subtle lg:mt-14">
+          {/* The path is an editor's tab: decoration, the breadcrumb says where. */}
+          <span aria-hidden="true" className="mr-3 path-mono">
+            ~/{parent}
+            <span className="text-fg">{leaf}</span>
+          </span>
           {eyebrow}
         </div>
         <h1 className="mt-5 max-w-4xl text-display font-semibold text-balance">

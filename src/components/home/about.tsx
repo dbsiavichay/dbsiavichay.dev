@@ -6,9 +6,16 @@ import { getI18n } from "@/i18n/server";
 import { isPending } from "@/lib/pending";
 import { SEPARATOR } from "@/lib/separator";
 
+import { KeyboardDrawing } from "./keyboard-drawing";
+
 export async function About() {
   const { locale, dict } = await getI18n();
   const t = dict.about;
+
+  const { keyboard, photo } = profile.workspace;
+  const layout = new Intl.NumberFormat(locale, { style: "percent" }).format(
+    keyboard.layout,
+  );
 
   const languages = profile.languages.map((language) => ({
     key: language.name.en,
@@ -79,6 +86,43 @@ export async function About() {
             </div>
           </dl>
         </div>
+      </div>
+
+      {/* The desk: the setup sheet, and the keyboard drawn in the same line
+          as the cut plan until there is a photo of the real thing. */}
+      <div className="mt-16 grid gap-10 border-t border-line pt-10 lg:mt-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:items-end lg:gap-12">
+        <div>
+          <h3 className="label-mono text-fg">{t.workspace.title}</h3>
+          <p className="mt-4 text-fg-muted">{t.workspace.lede}</p>
+          <dl className="mt-8 grid grid-cols-[auto_minmax(0,1fr)] gap-x-6 gap-y-3 text-sm">
+            <dt className="label-mono text-fg-subtle">
+              {t.workspace.keyboard}
+            </dt>
+            <dd className="text-fg">{keyboard.model}</dd>
+            <dt className="label-mono text-fg-subtle">{t.workspace.layout}</dt>
+            <dd className="text-fg">{layout}</dd>
+            <dt className="label-mono text-fg-subtle">
+              {t.workspace.switches}
+            </dt>
+            <dd className="text-fg">{keyboard.switches}</dd>
+          </dl>
+        </div>
+        {photo ? (
+          <figure>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={photo.image.src}
+              width={photo.image.width}
+              height={photo.image.height}
+              alt={photo.alt[locale]}
+              loading="lazy"
+              decoding="async"
+              className="h-auto w-full rounded-lg border border-line bg-surface"
+            />
+          </figure>
+        ) : (
+          <KeyboardDrawing caption={t.workspace.caption} size={layout} />
+        )}
       </div>
     </Section>
   );

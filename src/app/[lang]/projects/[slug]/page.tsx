@@ -9,9 +9,9 @@ import {
 } from "@/components/article/article-header";
 import { NextLink } from "@/components/article/next-link";
 import { NoteList } from "@/components/article/note-list";
-import { Badge } from "@/components/ui/badge";
 import { Container } from "@/components/ui/container";
 import { PendingList } from "@/components/ui/pending";
+import { StackLine } from "@/components/ui/stack-line";
 import { TextLink } from "@/components/ui/text-link";
 import { getI18n } from "@/i18n/server";
 import {
@@ -105,6 +105,7 @@ export default async function CaseStudyPage({
       <ArticleHeader
         back={{ href: `/${locale}#work`, label: t.back }}
         breadcrumbLabel={dict.article.breadcrumb}
+        path={`projects/${slug}`}
         eyebrow={
           <>
             <span className="text-accent-text">{t.eyebrow}</span>
@@ -141,14 +142,8 @@ export default async function CaseStudyPage({
             className={cn("bg-surface p-5", !project.live && "sm:col-span-2")}
           >
             <dt className="label-mono text-fg-subtle">{dict.work.stack}</dt>
-            <dd className="mt-3">
-              <ul className="flex flex-wrap gap-2">
-                {project.stack.map((item) => (
-                  <li key={item}>
-                    <Badge>{item}</Badge>
-                  </li>
-                ))}
-              </ul>
+            <dd className="mt-2">
+              <StackLine items={project.stack} className="text-sm text-fg" />
             </dd>
           </div>
           {project.live ? (
