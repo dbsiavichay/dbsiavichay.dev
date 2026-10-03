@@ -7,6 +7,7 @@ import { GeistMono, GeistSans } from "@/fonts";
 import { localeTags, locales } from "@/i18n/config";
 import { getI18n } from "@/i18n/server";
 import { env } from "@/lib/env";
+import { themeColors } from "@/lib/theme-colors";
 import { cn } from "@/lib/utils";
 
 import "../globals.css";
@@ -29,8 +30,8 @@ export async function generateMetadata(): Promise<Metadata> {
 export const viewport: Viewport = {
   colorScheme: "dark light",
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#0a0b0d" },
-    { media: "(prefers-color-scheme: light)", color: "#f6f5f2" },
+    { media: "(prefers-color-scheme: dark)", color: themeColors.dark.canvas },
+    { media: "(prefers-color-scheme: light)", color: themeColors.light.canvas },
   ],
 };
 

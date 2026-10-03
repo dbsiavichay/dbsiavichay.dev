@@ -5,6 +5,7 @@ import { ButtonLink, buttonStyles } from "@/components/ui/button";
 import { DimensionLine } from "@/components/ui/dimension-line";
 import { Pending } from "@/components/ui/pending";
 import { Section } from "@/components/ui/section";
+import { SectionIndex } from "@/components/ui/section-header";
 import { profile } from "@/data/profile";
 import { getI18n } from "@/i18n/server";
 
@@ -16,18 +17,14 @@ export async function Contact() {
 
   return (
     <Section id="contact" labelledBy="contact-title" className="blueprint-grid">
-      <p className="flex items-center gap-3 label-mono text-fg-subtle">
-        <span className="text-accent-text">08</span>
-        <span aria-hidden="true" className="h-px w-6 bg-line-strong" />
-        <span>{t.eyebrow}</span>
-      </p>
+      <SectionIndex index="08" label={t.eyebrow} />
       <h2
         id="contact-title"
         className="mt-6 max-w-4xl text-display font-semibold text-balance text-fg"
       >
         {t.title}
       </h2>
-      <p className="mt-6 max-w-2xl text-lg text-pretty text-fg-muted">
+      <p className="mt-6 max-w-2xl text-lede text-pretty text-fg-muted">
         {t.lede}
       </p>
 

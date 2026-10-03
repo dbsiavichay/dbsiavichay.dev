@@ -1,58 +1,93 @@
 @import "tailwindcss";
 
 /*
- * Design tokens — "Engineering meets Product".
+ * Design tokens — "Graphite & lamp": warm graphite, like a dark desk under a
+ * lamp, with one amber light.
  *
  * Dark is the design target; light follows the visitor's system preference.
- * Every text colour pair is ≥ 4.5:1 (WCAG AA) on canvas, surface and raised;
- * `line-strong` is ≥ 3:1 on canvas because it outlines interactive controls
+ * Every text colour is ≥ 4.5:1 (WCAG AA) on canvas, surface and raised;
+ * `line-strong` and `focus` are ≥ 3:1 because they outline controls and focus
  * (WCAG 1.4.11). `line` is a decorative hairline and is meant to be quiet.
+ * tests/unit/app/tokens.test.ts checks every pair against this file.
  */
 :root {
   color-scheme: dark;
 
-  --canvas: #0a0b0d;
-  --surface: #101215;
-  --raised: #15181c;
-  --line: #22262c;
-  --line-strong: #5f6670;
-  --fg: #ecebe8;
-  --fg-muted: #a3a9b2;
-  --fg-subtle: #868e99;
+  --canvas: #0c0b0a;
+  --surface: #131210;
+  --raised: #1a1816;
+  --line: #27241f;
+  --line-strong: #6e675d;
+  --fg: #eeeae3;
+  --fg-muted: #aaa398;
+  --fg-subtle: #8f887c;
   --accent: #f2a541;
   --accent-hover: #f6b862;
-  --on-accent: #121212;
+  --on-accent: #14110d;
   --accent-text: #f2a541;
   --accent-soft: rgb(242 165 65 / 0.12);
   --focus: #f2a541;
-  --grid: rgb(255 255 255 / 0.035);
+  --grid: rgb(238 234 227 / 0.04);
   --signal-info: #6cc4d9;
   --signal-ok: #7fc98a;
   --signal-error: #e7816b;
+
+  /* The lamp: the only light in the scene, and only in the dark. */
+  --glow: rgb(242 165 65 / 0.11);
+
+  /* Low-profile keycaps: a face, the edge that sinks when pressed, a legend. */
+  --keycap: #1a1816;
+  --keycap-pressed: #221f1b;
+  --keycap-edge: var(--line-strong);
+  --keycap-fg: var(--fg);
+
+  /*
+   * The terminal and code are a screen: they stay dark in both themes, so
+   * the light block never overrides them. Syntax colours are desaturated and
+   * ≥ 4.5:1 on the terminal and on its bars.
+   */
+  --term: #11100e;
+  --term-bar: #181613;
+  --term-line: #2a2621;
+  --term-line-strong: #6e675d;
+  --term-fg: #ece6dc;
+  --term-muted: #a39b8e;
+  --term-accent: #f2a541;
+  --term-ok: #7fc98a;
+  --syn-string: #a9c18c;
+  --syn-keyword: #d99c90;
+  --syn-function: #e3c48f;
+  --syn-number: #9fc3c9;
+  --syn-comment: #8a8276;
 }
 
 @media (prefers-color-scheme: light) {
   :root {
     color-scheme: light;
 
-    --canvas: #f6f5f2;
-    --surface: #ffffff;
-    --raised: #fbfaf8;
-    --line: #e2e0db;
-    --line-strong: #8a867d;
-    --fg: #15171a;
-    --fg-muted: #4a5059;
-    --fg-subtle: #5f656e;
+    --canvas: #f5f3ef;
+    --surface: #fffdfa;
+    --raised: #faf8f4;
+    --line: #e3dfd7;
+    --line-strong: #8a8478;
+    --fg: #1a1814;
+    --fg-muted: #4d4840;
+    --fg-subtle: #615b51;
     --accent: #e99a2c;
     --accent-hover: #d98a1c;
-    --on-accent: #15171a;
+    --on-accent: #1a1814;
     --accent-text: #8f4c00;
-    --accent-soft: rgb(233 154 44 / 0.14);
+    --accent-soft: rgb(233 154 44 / 0.16);
     --focus: #8f4c00;
-    --grid: rgb(0 0 0 / 0.045);
+    --grid: rgb(26 24 20 / 0.05);
     --signal-info: #1d6f83;
     --signal-ok: #2c7337;
     --signal-error: #a8402a;
+
+    --glow: transparent;
+
+    --keycap: #fffdfa;
+    --keycap-pressed: #ebe7df;
   }
 }
 
@@ -85,9 +120,13 @@
   --text-3xl: clamp(1.875rem, 1.45rem + 1.9vw, 2.75rem);
   --text-3xl--line-height: 1.12;
   --text-3xl--letter-spacing: -0.025em;
+  /* Room between the lines of a two- to four-line H1 on a phone. */
   --text-display: clamp(2.25rem, 1.35rem + 4.2vw, 4.75rem);
-  --text-display--line-height: 1.02;
-  --text-display--letter-spacing: -0.035em;
+  --text-display--line-height: 1.05;
+  --text-display--letter-spacing: -0.03em;
+  /* The line under a display title: 18 → 20px, so the title keeps the contrast. */
+  --text-lede: clamp(1.125rem, 1.05rem + 0.3vw, 1.25rem);
+  --text-lede--line-height: 1.6;
 
   /* Section rhythm and the site container. */
   --spacing-section: clamp(4.5rem, 3rem + 6vw, 8.5rem);
@@ -125,6 +164,24 @@
   --color-signal-info: var(--signal-info);
   --color-signal-ok: var(--signal-ok);
   --color-signal-error: var(--signal-error);
+  --color-glow: var(--glow);
+  --color-keycap: var(--keycap);
+  --color-keycap-pressed: var(--keycap-pressed);
+  --color-keycap-edge: var(--keycap-edge);
+  --color-keycap-fg: var(--keycap-fg);
+  --color-term: var(--term);
+  --color-term-bar: var(--term-bar);
+  --color-term-line: var(--term-line);
+  --color-term-line-strong: var(--term-line-strong);
+  --color-term-fg: var(--term-fg);
+  --color-term-muted: var(--term-muted);
+  --color-term-accent: var(--term-accent);
+  --color-term-ok: var(--term-ok);
+  --color-syn-string: var(--syn-string);
+  --color-syn-keyword: var(--syn-keyword);
+  --color-syn-function: var(--syn-function);
+  --color-syn-number: var(--syn-number);
+  --color-syn-comment: var(--syn-comment);
 }
 
 @layer base {
@@ -179,6 +236,19 @@
   line-height: var(--text-xs--line-height);
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+/*
+ * Monospaced as typed: paths, commands and keys, in their own case and
+ * without tracking. `label-mono` names things; `path-mono` is something you
+ * could paste into a terminal.
+ */
+@utility path-mono {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.25rem;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 /* The drafting grid behind the hero. Two 1px lines, not a decorative gradient. */

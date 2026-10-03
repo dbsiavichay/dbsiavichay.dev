@@ -32,11 +32,11 @@ export function SectionHeader({
         className,
       )}
     >
-      <p className="flex items-center gap-3 self-start label-mono text-fg-subtle lg:pt-3">
-        <span className="text-accent-text">{index}</span>
-        <span aria-hidden="true" className="h-px w-6 bg-line-strong" />
-        <span>{eyebrow}</span>
-      </p>
+      <SectionIndex
+        index={index}
+        label={eyebrow}
+        className="self-start lg:pt-3"
+      />
       <div className="max-w-3xl">
         <h2
           id={titleId}
@@ -49,5 +49,21 @@ export function SectionHeader({
         ) : null}
       </div>
     </header>
+  );
+}
+
+type SectionIndexProps = {
+  index: string;
+  label: string;
+  className?: string;
+};
+
+/** "02 / Selected work": the sheet number, then the name of the section. */
+export function SectionIndex({ index, label, className }: SectionIndexProps) {
+  return (
+    <p className={cn("label-mono text-fg-subtle", className)}>
+      <span className="text-accent-text">{index}</span>{" "}
+      <span aria-hidden="true">/</span> {label}
+    </p>
   );
 }

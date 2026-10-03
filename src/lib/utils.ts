@@ -2,11 +2,11 @@ import { clsx, type ClassValue } from "clsx";
 import { extendTailwindMerge } from "tailwind-merge";
 
 // tailwind-merge has to know the custom font sizes, or it reads `text-display`
-// as a colour and drops it when a `text-fg` class follows.
+// or `text-lede` as a colour and drops it when a `text-fg` class follows.
 const twMerge = extendTailwindMerge({
   extend: {
     classGroups: {
-      "font-size": [{ text: ["display"] }],
+      "font-size": [{ text: ["display", "lede"] }],
     },
   },
 });
