@@ -26,7 +26,7 @@ export async function Hero() {
           >
             {dict.hero.title}
           </h1>
-          <p className="mt-6 max-w-2xl text-lg text-pretty text-fg-muted sm:text-xl sm:leading-relaxed">
+          <p className="mt-6 max-w-2xl text-lede text-pretty text-fg-muted">
             {dict.hero.lede}
           </p>
           <div className="mt-10 flex flex-wrap gap-3 motion-safe:animate-rise motion-safe:[animation-delay:120ms]">

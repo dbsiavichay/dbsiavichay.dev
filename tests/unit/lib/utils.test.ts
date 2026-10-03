@@ -7,9 +7,12 @@ describe("cn", () => {
     expect(cn("px-4 text-fg", "px-6")).toBe("text-fg px-6");
   });
 
-  it("keeps the custom display size next to a colour utility", () => {
-    expect(cn("text-display", "text-fg")).toBe("text-display text-fg");
-  });
+  it.each(["text-display", "text-lede"])(
+    "keeps the custom size %s next to a colour utility",
+    (size) => {
+      expect(cn(size, "text-fg")).toBe(`${size} text-fg`);
+    },
+  );
 
   it("skips falsy values", () => {
     expect(cn("a", false, undefined, "b")).toBe("a b");

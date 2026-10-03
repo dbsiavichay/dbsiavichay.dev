@@ -42,7 +42,7 @@ export function ArticleHeader({
         <h1 className="mt-5 max-w-4xl text-display font-semibold text-balance">
           {title}
         </h1>
-        <p className="mt-6 max-w-3xl text-lg text-pretty text-fg-muted sm:text-xl sm:leading-relaxed">
+        <p className="mt-6 max-w-3xl text-lede text-pretty text-fg-muted">
           {lede}
         </p>
         {children}

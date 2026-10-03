@@ -4,6 +4,7 @@ import path from "node:path";
 import { ImageResponse } from "next/og";
 
 import { env } from "./env";
+import { themeColors } from "./theme-colors";
 
 export const ogSize = { width: 1200, height: 630 };
 export const ogContentType = "image/png";
@@ -20,17 +21,9 @@ function loadFonts() {
   return fonts;
 }
 
-// The image renderer can't read CSS variables: these mirror the dark tokens
-// in globals.css (canvas, fg, fg-muted, fg-subtle, line-strong, accent, grid).
-const colors = {
-  canvas: "#0a0b0d",
-  fg: "#ecebe8",
-  muted: "#a3a9b2",
-  subtle: "#868e99",
-  line: "#5f6670",
-  accent: "#f2a541",
-  grid: "rgba(255, 255, 255, 0.035)",
-};
+// The image renderer can't read CSS variables.
+const colors = themeColors.dark;
+const line = colors["line-strong"];
 
 type OgCard = {
   /** Mono label above the title. */
@@ -71,7 +64,7 @@ export async function renderOgImage({ eyebrow, title, subtitle }: OgCard) {
           fontSize: 24,
           letterSpacing: 2,
           textTransform: "uppercase",
-          color: colors.subtle,
+          color: colors["fg-subtle"],
         }}
       >
         {eyebrow}
@@ -95,7 +88,7 @@ export async function renderOgImage({ eyebrow, title, subtitle }: OgCard) {
               maxWidth: 960,
               fontSize: 32,
               lineHeight: 1.3,
-              color: colors.muted,
+              color: colors["fg-muted"],
             }}
           >
             {subtitle}
@@ -103,8 +96,8 @@ export async function renderOgImage({ eyebrow, title, subtitle }: OgCard) {
         ) : null}
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-        <div style={{ width: 1, height: 22, backgroundColor: colors.line }} />
-        <div style={{ flexGrow: 1, height: 1, backgroundColor: colors.line }} />
+        <div style={{ width: 1, height: 22, backgroundColor: line }} />
+        <div style={{ flexGrow: 1, height: 1, backgroundColor: line }} />
         <div
           style={{
             display: "flex",
@@ -115,7 +108,7 @@ export async function renderOgImage({ eyebrow, title, subtitle }: OgCard) {
         >
           {new URL(env.SITE_URL).host}
         </div>
-        <div style={{ width: 1, height: 22, backgroundColor: colors.line }} />
+        <div style={{ width: 1, height: 22, backgroundColor: line }} />
       </div>
     </div>,
     {
