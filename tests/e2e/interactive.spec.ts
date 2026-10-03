@@ -71,6 +71,121 @@ test.describe("command menu", () => {
   });
 });
 
+test.describe("keyboard shortcuts", () => {
+  test.skip(({ isMobile }) => isMobile, "Keyboard shortcuts.");
+
+  /** Where a section's top sits, relative to the viewport. */
+  const top = (page: Page, selector: string) =>
+    page.evaluate(
+      (s) => Math.round(document.querySelector(s)!.getBoundingClientRect().top),
+      selector,
+    );
+
+  test("`g` and a letter go to the home, `j` and `k` move between sections", async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/en/colophon");
+    await page.waitForLoadState("networkidle");
+    await page.keyboard.press("g");
+    await page.keyboard.press("p");
+    await expect(page).toHaveURL(/\/en#work$/);
+    // A section stops at the scroll padding, under the sticky header.
+    await expect.poll(() => top(page, "#work")).toBe(80);
+
+    await page.keyboard.press("j");
+    await expect.poll(() => top(page, "#notes")).toBe(80);
+    await page.keyboard.press("k");
+    await page.keyboard.press("k");
+    await expect.poll(() => top(page, "#capabilities")).toBe(80);
+    await page.keyboard.press("k");
+    await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+  });
+
+  test("`j` follows an article's sections", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/en/projects/maderable");
+    await page.waitForLoadState("networkidle");
+    await page.keyboard.press("j");
+    await page.keyboard.press("j");
+    const second = await page.evaluate(
+      () => document.querySelectorAll(".prose h2[id]")[1]!.id,
+    );
+    await expect.poll(() => top(page, `#${second}`)).toBe(80);
+    await expect(
+      page.locator(`[data-toc] a[href="#${second}"]`).first(),
+    ).toHaveAttribute("aria-current", "location");
+  });
+
+  test("`:` opens command mode, which answers like Vim", async ({ page }) => {
+    await page.goto("/es");
+    await page.waitForLoadState("networkidle");
+    await page.keyboard.press(":");
+    const search = page.getByRole("combobox", { name: "Buscar en el sitio" });
+    await expect(search).toHaveValue(":");
+    await expect(page.getByRole("option").first()).toHaveText(
+      /^:helpAtajos de teclado/,
+    );
+
+    await search.fill(":nada");
+    await expect(
+      page.getByText("E492: No es una orden del editor: nada", { exact: true }),
+    ).toBeVisible();
+    await search.fill(":colophon");
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(/\/es\/colophon$/);
+  });
+
+  test("the help turns the keys off, and the footer brings it back", async ({
+    page,
+  }) => {
+    await page.goto("/en");
+    await page.waitForLoadState("networkidle");
+    await page.keyboard.press("?");
+    const help = page.getByRole("dialog", { name: "Keyboard shortcuts" });
+    await expect(help).toBeVisible();
+    const results = await new AxeBuilder({ page }).withTags(axeTags).analyze();
+    expect(results.violations).toEqual([]);
+
+    const toggle = help.getByRole("switch", { name: "Use these shortcuts" });
+    await toggle.click();
+    await expect(toggle).toHaveAttribute("aria-checked", "false");
+    await page.keyboard.press("Escape");
+    await expect(help).toBeHidden();
+
+    // Remembered after a reload: `?` does nothing now.
+    await page.reload();
+    await page.waitForLoadState("networkidle");
+    await page.keyboard.press("?");
+    await page.keyboard.press("/");
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+
+    await page
+      .getByRole("contentinfo")
+      .getByRole("button", { name: "Keyboard shortcuts" })
+      .click();
+    await expect(help).toBeVisible();
+    await expect(toggle).toHaveAttribute("aria-checked", "false");
+    await toggle.click();
+    await page.keyboard.press("Escape");
+    await page.keyboard.press("/");
+    await expect(
+      page.getByRole("combobox", { name: "Search the site" }),
+    ).toBeFocused();
+  });
+
+  test("the console says hello", async ({ page }) => {
+    const messages: string[] = [];
+    page.on("console", (message) => {
+      if (message.type() === "info") messages.push(message.text());
+    });
+    await page.goto("/en");
+    await expect
+      .poll(() => messages.join("\n"))
+      .toContain("https://github.com/dbsiavichay/dbsiavichay.dev");
+  });
+});
+
 test.describe("interactive figures", () => {
   test("the home never downloads React Flow", async ({ page }) => {
     const scripts = recordScripts(page);

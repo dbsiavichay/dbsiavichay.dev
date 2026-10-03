@@ -126,7 +126,7 @@ export const es = {
     },
     workspace: {
       title: "Espacio de trabajo",
-      lede: "Fuera del trabajo en sí: teclados mecánicos.",
+      lede: "Fuera del trabajo en sí: teclados mecánicos. Los atajos de Vim funcionan en este sitio porque me gustan, no porque viva en Vim.",
       keyboard: "Teclado",
       layout: "Formato",
       switches: "Switches",
@@ -147,6 +147,7 @@ export const es = {
     builtWith: "Hecho con Next.js y prerenderizado.",
     colophon: "Cómo está hecho",
     backToTop: "Volver arriba",
+    shortcuts: "Atajos de teclado",
   },
   article: {
     breadcrumb: "Ruta de navegación",
@@ -179,6 +180,7 @@ export const es = {
     results: "Resultados",
     empty: "Nada coincide con “{query}”.",
     groups: {
+      commands: "Comandos",
       sections: "Secciones",
       projects: "Case studies",
       notes: "Notas de ingeniería",
@@ -190,7 +192,44 @@ export const es = {
     linkedin: "LinkedIn",
     source: "Código fuente de este sitio",
     colophon: "Cómo está hecho este sitio",
+    shortcuts: "Atajos de teclado",
+    quit: "Cerrar este menú",
+    quitDone: "Cerrado. De este sí se puede salir.",
+    sudo: "Permiso concedido. Hablemos.",
+    notCommand: "E492: No es una orden del editor: {command}",
+    notCommandHint: "Escribe :help para ver la lista.",
     hints: { navigate: "moverte", open: "abrir", close: "cerrar" },
+  },
+  shortcuts: {
+    title: "Atajos de teclado",
+    intro:
+      "Atajos al estilo de Vim, porque me gustan. Apágalos si te estorban.",
+    toggle: "Usar estos atajos",
+    always: "{search} y Esc funcionan siempre.",
+    close: "Cerrar",
+    groups: {
+      anywhere: "En cualquier página",
+      go: "Ir a",
+      page: "En la página",
+    },
+    keys: {
+      search: "Buscar",
+      command: "Modo comando, en la búsqueda",
+      help: "Esta ayuda",
+      close: "Cerrar un diálogo",
+      next: "Sección siguiente",
+      previous: "Sección anterior",
+    },
+    go: {
+      home: "Inicio",
+      work: "Proyectos",
+      notes: "Notas de ingeniería",
+      experience: "Experiencia",
+      about: "Sobre mí",
+      contact: "Contacto",
+    },
+    greeting:
+      "Hola, soy Denis. El código de este sitio es público: {repo}\nPresiona ? en cualquier página para ver los atajos de teclado.",
   },
   cutPlan: {
     title: "Plano de corte",
