@@ -118,6 +118,8 @@ for (const bg of ["term", "term-bar"]) {
   }
   pairs.push(["term-line-strong", bg, NON_TEXT]);
 }
+// The legend of the keycap drawn in the terminal's output.
+pairs.push(["term-fg", "term-key", TEXT]);
 
 describe.each(Object.entries(themes))("%s tokens", (_, theme) => {
   it.each(pairs)("--%s on --%s is ≥ %s:1", (fg, bg, minimum) => {

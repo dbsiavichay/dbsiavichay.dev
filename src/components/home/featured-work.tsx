@@ -67,11 +67,15 @@ export async function FeaturedWork({ projects }: { projects: Project[] }) {
           <h3 className="label-mono text-fg">{t.openSource.title}</h3>
           <p className="text-sm text-fg-subtle">{t.openSource.lede}</p>
         </div>
-        <ul className="mt-6 grid gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
+        <ul className="mt-6 grid gap-x-8 gap-y-10 border-t border-line pt-6 sm:grid-cols-2 lg:grid-cols-4">
           {openSource.map((pkg) => (
-            <li key={pkg.name} className="flex flex-col bg-surface p-5">
-              <h4 className="font-mono text-sm font-medium text-fg">
-                {pkg.name}
+            <li key={pkg.name} className="flex flex-col">
+              {/* The command that installs it: the package is on PyPI. */}
+              <h4 className="path-mono text-fg">
+                <span aria-hidden="true" className="text-fg-subtle">
+                  <span className="text-accent-text">$</span> pip install{" "}
+                </span>
+                <span className="whitespace-nowrap">{pkg.name}</span>
               </h4>
               <p className="mt-2 grow text-sm text-fg-muted">
                 {pkg.description[locale]}

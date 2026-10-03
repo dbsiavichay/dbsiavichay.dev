@@ -8,6 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card, cardLinkClass } from "@/components/ui/card";
 import { DimensionLine } from "@/components/ui/dimension-line";
+import {
+  Cursor,
+  Prompt,
+  TerminalWindow,
+} from "@/components/terminal/terminal-window";
 import { Kbd } from "@/components/ui/kbd";
 import { Pending } from "@/components/ui/pending";
 import { Section } from "@/components/ui/section";
@@ -57,6 +62,9 @@ const terminalTokens = [
   "term-muted",
   "term-accent",
   "term-ok",
+  "term-dot",
+  "term-key",
+  "term-key-edge",
   "syn-string",
   "syn-keyword",
   "syn-function",
@@ -134,11 +142,15 @@ export default function DesignSystemPage() {
                 <Swatch key={token} token={token} />
               ))}
             </ul>
-            <figure className="mt-6 max-w-xl overflow-hidden rounded-lg border border-term-line bg-term">
-              <figcaption className="border-b border-term-line bg-term-bar px-4 py-2 path-mono text-term-muted">
-                tokens.ts
-              </figcaption>
-              <pre className="overflow-x-auto px-4 py-3 path-mono text-term-fg">
+            <TerminalWindow
+              as="div"
+              title={<span>~/dbsiavichay.dev — tokens.ts</span>}
+              status={
+                <span className="py-1">TerminalWindow · Prompt · Cursor</span>
+              }
+              className="mt-6 max-w-xl"
+            >
+              <pre className="overflow-x-auto">
                 <code>
                   <span className="text-syn-comment">
                     {"// The terminal is a screen: it stays dark."}
@@ -151,36 +163,45 @@ export default function DesignSystemPage() {
                   {"{\n  "}
                   <span className="text-syn-keyword">return</span> ratio {">="}{" "}
                   minimum ? <span className="text-syn-string">{'"AA"'}</span> :{" "}
-                  <span className="text-syn-string">{'"fail"'}</span>;
-                  {"\n}\n\n"}
-                  <span className="text-term-accent">$</span> npm run test
-                  {"\n"}
-                  <span className="text-term-ok">tokens</span>{" "}
-                  <span className="text-term-muted">checked</span>
+                  <span className="text-syn-string">{'"fail"'}</span>;{"\n}"}
                 </code>
               </pre>
-            </figure>
+              <Prompt command="npm run test" className="mt-4" />
+              <p>
+                <span className="text-term-ok">tokens</span>{" "}
+                <span className="text-term-muted">checked</span>
+              </p>
+              <Prompt>
+                <Cursor />
+              </Prompt>
+            </TerminalWindow>
           </div>
 
           <div>
             <h3 className="label-mono text-fg-subtle">
               Keycaps, from the tokens
             </h3>
-            <p className="mt-4 flex flex-wrap items-end gap-3">
+            <p className="mt-4 flex flex-wrap items-center gap-3">
               {keys.map((key) => (
-                <kbd
+                <Kbd
                   key={key}
-                  className="inline-flex h-9 min-w-9 items-center justify-center rounded-md border border-b-4 border-keycap-edge bg-keycap px-2 font-mono text-sm text-keycap-fg first:border-accent first:text-accent-text"
+                  size="lg"
+                  className="first:[--keycap-edge:var(--accent)] first:[--keycap-fg:var(--accent-text)] first:[--keycap:var(--accent-soft)]"
                 >
                   {key}
-                </kbd>
+                </Kbd>
               ))}
-              <kbd className="inline-flex h-9 min-w-9 translate-y-[3px] items-center justify-center rounded-md border border-keycap-edge bg-keycap-pressed px-2 font-mono text-sm text-keycap-fg">
+              <Kbd size="lg" pressed>
                 j
-              </kbd>
+              </Kbd>
+              <span className="grid size-8 keycap place-items-center rounded-md font-mono text-xs font-semibold [--keycap-depth:3px]">
+                DS
+              </span>
             </p>
             <p className="mt-3 text-sm text-fg-muted">
-              The last one is pressed: its edge sinks and its face darkens.
+              Esc is lit with the accent. The <code>j</code> is pressed: its
+              face sinks into its edge, and nothing around it moves. The DS
+              monogram in the header is the same keycap.
             </p>
           </div>
         </div>

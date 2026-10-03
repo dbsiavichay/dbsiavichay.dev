@@ -98,6 +98,7 @@ export default async function NotePage({
       <ArticleHeader
         back={{ href: `/${locale}#notes`, label: t.back }}
         breadcrumbLabel={dict.article.breadcrumb}
+        path={`notes/${slug}`}
         eyebrow={
           <>
             <span className="text-accent-text">

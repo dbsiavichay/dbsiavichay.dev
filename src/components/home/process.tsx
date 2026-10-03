@@ -19,9 +19,10 @@ export async function Process({ evidence }: { evidence: EvidenceContext }) {
         title={t.title}
         lede={t.lede}
       />
-      <ol className="grid reveal gap-px overflow-hidden rounded-lg border border-line bg-line md:grid-cols-2 lg:grid-cols-3">
+      {/* The numbered rule heads each step; no box around it. */}
+      <ol className="grid reveal gap-x-8 gap-y-12 md:grid-cols-2 lg:grid-cols-3">
         {processSteps.map((step, i) => (
-          <li key={step.id} className="flex flex-col bg-canvas p-6 lg:p-8">
+          <li key={step.id} className="flex flex-col">
             <p
               aria-hidden="true"
               className="flex items-center gap-3 label-mono text-accent-text"

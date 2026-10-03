@@ -129,6 +129,14 @@ export const en = {
       education: "Education",
       educationValue: "Master's in Software Engineering, UNIR",
     },
+    workspace: {
+      title: "Workspace",
+      lede: "Away from the work itself: mechanical keyboards.",
+      keyboard: "Keyboard",
+      layout: "Layout",
+      switches: "Switches",
+      caption: "The keyboard, drawn like a cut plan.",
+    },
   },
   contact: {
     eyebrow: "Contact",

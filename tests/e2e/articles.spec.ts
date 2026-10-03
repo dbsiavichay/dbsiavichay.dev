@@ -57,6 +57,28 @@ test.describe("case studies, notes and the colophon", () => {
     }
   });
 
+  test("the contents follow the section being read", async ({
+    page,
+  }, testInfo) => {
+    test.skip(
+      testInfo.project.name === "mobile",
+      "The sticky contents are a desktop layout.",
+    );
+    await page.goto("/en/projects/maderable");
+    const toc = page.locator('nav[aria-labelledby="toc-title"]');
+    const current = toc.locator('[aria-current="location"]');
+    const ruler = toc.locator('p[aria-hidden="true"]');
+    await expect(current).toHaveCount(0);
+    await expect(ruler).toHaveText("NORMALTop");
+
+    const links = toc.getByRole("link");
+    const total = String(await links.count()).padStart(2, "0");
+    await links.nth(1).click();
+    await expect(links.nth(1)).toHaveAttribute("aria-current", "location");
+    await expect(current).toHaveCount(1);
+    await expect(ruler).toHaveText(`NORMAL02/${total}`);
+  });
+
   test("the contents fold above the text on a phone", async ({
     page,
   }, testInfo) => {

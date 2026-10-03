@@ -26,9 +26,10 @@ export async function Navbar() {
           aria-label={dict.a11y.home}
           className="group flex items-center gap-3 rounded-sm"
         >
+          {/* The monogram is a keycap: it lights up on hover and sinks when pressed. */}
           <span
             aria-hidden="true"
-            className="grid size-8 place-items-center rounded-sm border border-line-strong font-mono text-xs font-medium text-fg transition-colors group-hover:border-accent"
+            className="grid size-8 keycap place-items-center rounded-md font-mono text-xs font-semibold [--keycap-depth:3px] group-hover:[--keycap-edge:var(--accent)] group-active:keycap-pressed"
           >
             DS
           </span>

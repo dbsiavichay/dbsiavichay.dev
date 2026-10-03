@@ -2,6 +2,8 @@ import { ChevronDown } from "lucide-react";
 
 import type { Heading } from "@/lib/mdx-source";
 
+import { ReadingStatus } from "./reading-status";
+
 type TableOfContentsProps = {
   headings: Heading[];
   label: string;
@@ -9,16 +11,17 @@ type TableOfContentsProps = {
 
 function Links({ headings }: { headings: Heading[] }) {
   return (
-    <ol className="space-y-1 border-l border-line text-sm">
+    // `data-toc`: ReadingStatus marks the section being read in these links.
+    <ol data-toc className="space-y-1 border-l border-line text-sm">
       {headings.map((heading, i) => (
         <li key={heading.id}>
           <a
             href={`#${heading.id}`}
-            className="-ml-px flex gap-3 border-l border-transparent py-1.5 pl-4 text-fg-muted transition-colors hover:border-accent hover:text-fg"
+            className="group -ml-px flex gap-3 border-l border-transparent py-1.5 pr-2 pl-4 text-fg-muted transition-colors hover:border-accent hover:text-fg aria-[current=location]:border-accent aria-[current=location]:bg-raised aria-[current=location]:text-fg"
           >
             <span
               aria-hidden="true"
-              className="font-mono text-xs leading-5 text-fg-subtle"
+              className="font-mono text-xs leading-5 text-fg-subtle group-aria-[current=location]:text-accent-text"
             >
               {String(i + 1).padStart(2, "0")}
             </span>
@@ -51,7 +54,10 @@ export function TableOfContentsDisclosure({
   );
 }
 
-/** Beside the text from `lg` up, sticky below the header. */
+/**
+ * Beside the text from `lg` up, sticky below the header, with a cursorline on
+ * the section being read and a status line under it.
+ */
 export function TableOfContentsNav({ headings, label }: TableOfContentsProps) {
   return (
     <nav aria-labelledby="toc-title" className="sticky top-24">
@@ -59,6 +65,7 @@ export function TableOfContentsNav({ headings, label }: TableOfContentsProps) {
         {label}
       </p>
       <Links headings={headings} />
+      <ReadingStatus ids={headings.map((heading) => heading.id)} />
     </nav>
   );
 }

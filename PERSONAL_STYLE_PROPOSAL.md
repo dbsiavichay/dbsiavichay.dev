@@ -2,7 +2,7 @@
 
 Propuesta de la segunda etapa de diseño del portfolio de **Denis Siavichay**: darle una identidad personal sin reconstruirlo. Parte del sitio que ya está en producción (fases 1–8 de `PORTFOLIO_PLAN.md`) y no cambia su arquitectura técnica.
 
-> **Estado:** Denis eligió la recomendación de la sección 5 (2026-10-03). La fase 10 (fundamentos) está implementada; siguen las fases 11–14 (sección 6).
+> **Estado:** Denis eligió la recomendación de la sección 5 (2026-10-03). Las fases 10 (fundamentos), 11 (navbar, hero y terminal) y 12 (proyectos, case studies, experiencia y About) están implementadas; siguen las fases 13–14 (sección 6).
 
 **Principio:** _A software engineer's digital workspace._ Quien visita el sitio entra en el espacio de trabajo digital de un ingeniero. La estética del setup (terminal, Vim, teclado mecánico, escritorio, luz cálida) es parte de su personalidad, pero el centro de la página sigue siendo **su trabajo, su ingeniería y los sistemas que construye**.
 
@@ -504,11 +504,11 @@ Sutiles, sin bloquear nada y sin convertir la página en un juego:
 
 Confirmado por Denis el 2026-10-03:
 
-- **Tiene un teclado Keychron.** La marca puede aparecer como un dato en la ficha del setup, nunca como logo ni como protagonista. El modelo y los switches quedan `pending()`.
+- **Tiene un Keychron K2 (75%) con switches brown.** La marca y el modelo aparecen como datos en la ficha del setup, nunca como logo ni como protagonista.
 - **Usa Vim de forma ocasional, y le gusta.** El copy nunca dice "a diario", "vivo en Vim" ni "muscle memory".
 - **No hay foto del setup por ahora.** El dibujo del teclado es la figura; la foto entra cuando exista.
 
-Borradores para confirmar antes de publicarlos (fase 12 y 13):
+Borradores, aprobados por Denis el 2026-10-03. La ficha dice "Keychron K2" y "Brown"; la mitad de la frase de About que habla de Vim entra en la fase 13, con los atajos, para no afirmar algo que todavía no es cierto:
 
 | Dónde                   | EN                                                                                                                          | ES                                                                                                                              |
 | ----------------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
@@ -517,7 +517,7 @@ Borradores para confirmar antes de publicarlos (fase 12 y 13):
 | Frase opcional en About | Away from the work itself: mechanical keyboards. Vim keys work on this site because I like them, not because I live in Vim. | Fuera del trabajo en sí: teclados mecánicos. Los atajos de Vim funcionan en este sitio porque me gustan, no porque viva en Vim. |
 | Ayuda de atajos         | Vim-style keys, because I like them. Turn them off if they get in the way.                                                  | Atajos al estilo de Vim, porque me gustan. Apágalos si te estorban.                                                             |
 
-Concepto del asset generado (se implementa en la fase 12, si Denis lo aprueba):
+Concepto del asset generado (aprobado e implementado en la fase 12):
 
 - **Dibujo de un teclado 75% en planta**, generado como SVG en el servidor a partir de un arreglo de filas y anchos de tecla (en unidades `u`), igual que el plano de corte deriva su geometría de sus datos.
 - Hairlines `non-scaling-stroke` en `line-strong`, teclas como piezas sobre una placa (el espacio entre teclas hace de kerf), Esc en ámbar, una cota encima y rótulos mono (`esc`, `75 %`).

@@ -25,11 +25,12 @@ export async function Capabilities({
         title={t.title}
         lede={t.lede}
       />
-      <ul className="grid reveal gap-px overflow-hidden rounded-lg border border-line bg-line md:grid-cols-2 xl:grid-cols-4">
+      {/* Open columns under a hairline: a box here would mean nothing. */}
+      <ul className="grid reveal gap-x-8 gap-y-12 md:grid-cols-2 xl:grid-cols-4">
         {capabilities.map((capability, i) => (
           <li
             key={capability.id}
-            className="flex flex-col bg-surface p-6 lg:p-8"
+            className="flex flex-col border-t border-line pt-6"
           >
             <span aria-hidden="true" className="label-mono text-accent-text">
               {marks[i]}
