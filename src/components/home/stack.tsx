@@ -2,6 +2,7 @@ import { Section } from "@/components/ui/section";
 import { SectionHeader } from "@/components/ui/section-header";
 import { stack } from "@/data/stack";
 import { getI18n } from "@/i18n/server";
+import { SEPARATOR } from "@/lib/separator";
 
 import { resolveEvidence, type EvidenceContext } from "./evidence";
 
@@ -32,7 +33,7 @@ export async function Stack({ evidence }: { evidence: EvidenceContext }) {
                     <span className="sr-only">{t.usedIn}: </span>
                     {item.usedIn
                       .map((usage) => resolveEvidence(usage, evidence).label)
-                      .join(" · ")}
+                      .join(SEPARATOR)}
                   </p>
                 </li>
               ))}

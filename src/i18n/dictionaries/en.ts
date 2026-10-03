@@ -231,6 +231,8 @@ export const en = {
     inventory: "Inventory",
     previous: "Previous stage",
     next: "Next stage",
+    previousShort: "Previous",
+    nextShort: "Next",
     inventoryLane: "Existing inventory · read-only",
     activities: "In parallel",
     caption:

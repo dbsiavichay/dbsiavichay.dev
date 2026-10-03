@@ -23,9 +23,12 @@ env:
   IMAGE: ghcr.io/dbsiavichay/dbsiavichay.dev
   SITE_URL: https://dbsiavichay.dev
 
+# Every job pins its runner image: `ubuntu-latest` moves to a new release on
+# GitHub's schedule, not on a commit of this repo. Moving to the next one is a
+# pull request, checked by the same jobs.
 jobs:
   quality:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
@@ -44,7 +47,7 @@ jobs:
         run: npm run content:pending -- --github
 
   e2e:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
@@ -56,15 +59,17 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run build
       - run: npm run test:e2e
+      # Always, not only on failure: the report holds the screenshot of every
+      # layout at every width for visual review, plus the trace of any failure.
       - uses: actions/upload-artifact@v7
-        if: failure()
+        if: ${{ !cancelled() }}
         with:
           name: playwright-report
           path: playwright-report
           retention-days: 7
 
   lighthouse:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
@@ -85,7 +90,7 @@ jobs:
   # The image that gets published, built once and run the way the VPS runs it:
   # deploy/compose.yml, hardened, behind a Caddy loading portfolio.caddy.
   docker:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
@@ -129,7 +134,7 @@ jobs:
   # the edge's Caddy would reject.
   deploy-config:
     name: deploy config
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v7
@@ -158,7 +163,7 @@ jobs:
   publish:
     if: github.event_name == 'push'
     needs: [quality, e2e, lighthouse, docker, deploy-config]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
       contents: read
@@ -189,7 +194,7 @@ jobs:
 
   deploy:
     needs: publish
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     environment:
       name: production

@@ -228,23 +228,29 @@ export function OrderPipeline({ stages, labels }: OrderPipelineProps) {
         </div>
       ))}
 
+      {/* Below sm the full labels don't fit side by side on one line; the
+          accessible name stays the full label. */}
       <div className="flex items-center justify-between gap-3 border-t border-line px-4 py-3 sm:px-5">
         <button
           type="button"
           onClick={() => go(index - 1)}
           disabled={index === 0}
-          className="inline-flex h-9 items-center gap-1.5 rounded-md border border-line-strong px-3 text-sm text-fg transition-colors hover:bg-raised disabled:opacity-40 [&_svg]:size-4"
+          aria-label={labels.previous}
+          className="inline-flex h-9 items-center gap-1.5 rounded-md border border-line-strong px-3 text-sm whitespace-nowrap text-fg transition-colors hover:bg-raised disabled:opacity-40 [&_svg]:size-4"
         >
           <ChevronLeft aria-hidden="true" />
-          {labels.previous}
+          <span className="sm:hidden">{labels.previousShort}</span>
+          <span className="max-sm:hidden">{labels.previous}</span>
         </button>
         <button
           type="button"
           onClick={() => go(index + 1)}
           disabled={index === last}
-          className="inline-flex h-9 items-center gap-1.5 rounded-md border border-line-strong px-3 text-sm text-fg transition-colors hover:bg-raised disabled:opacity-40 [&_svg]:size-4"
+          aria-label={labels.next}
+          className="inline-flex h-9 items-center gap-1.5 rounded-md border border-line-strong px-3 text-sm whitespace-nowrap text-fg transition-colors hover:bg-raised disabled:opacity-40 [&_svg]:size-4"
         >
-          {labels.next}
+          <span className="sm:hidden">{labels.nextShort}</span>
+          <span className="max-sm:hidden">{labels.next}</span>
           <ChevronRight aria-hidden="true" />
         </button>
       </div>

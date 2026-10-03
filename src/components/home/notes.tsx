@@ -6,6 +6,7 @@ import { Section } from "@/components/ui/section";
 import { SectionHeader } from "@/components/ui/section-header";
 import { getI18n } from "@/i18n/server";
 import type { Note, Project } from "@/lib/content";
+import { SEPARATOR } from "@/lib/separator";
 
 type NotesProps = {
   notes: Note[];
@@ -29,7 +30,7 @@ export async function Notes({ notes, projects }: NotesProps) {
         {notes.map((note, i) => {
           const origin = note.projects
             .map((slug) => projects.get(slug)?.name ?? slug)
-            .join(" · ");
+            .join(SEPARATOR);
           return (
             <li
               key={note.slug}
@@ -54,7 +55,9 @@ export async function Notes({ notes, projects }: NotesProps) {
               </div>
               <div className="flex items-start justify-between gap-4 md:flex-col md:items-end md:text-right">
                 <p className="label-mono text-fg-subtle">
-                  {t.from} · {origin}
+                  {t.from}
+                  {SEPARATOR}
+                  {origin}
                 </p>
                 <ArrowUpRight
                   aria-hidden="true"

@@ -8,6 +8,7 @@ import type { Locale } from "@/i18n/config";
 import type { Localized } from "@/i18n/localized";
 import { getI18n } from "@/i18n/server";
 import { isPending, shouldShowPending, type Confirmable } from "@/lib/pending";
+import { SEPARATOR } from "@/lib/separator";
 
 import { DateRange } from "./date-range";
 import type { EvidenceContext } from "./evidence";
@@ -65,7 +66,7 @@ export async function Experience({ evidence }: { evidence: EvidenceContext }) {
               <h3 className="text-xl font-semibold text-balance text-fg">
                 <Text value={entry.role} locale={locale} />
                 <span className="font-normal text-fg-muted">
-                  {" · "}
+                  {SEPARATOR}
                   <Text value={entry.organization} locale={locale} />
                 </span>
               </h3>

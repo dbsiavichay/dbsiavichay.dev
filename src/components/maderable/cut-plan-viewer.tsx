@@ -572,16 +572,16 @@ export function CutPlanViewer({
               </th>
               <th
                 scope="col"
-                className="px-2 py-2 text-right font-normal sm:px-3"
+                className="px-1 py-2 text-right font-normal sm:px-3"
               >
                 {labels.table.quantity}
               </th>
-              <th scope="col" className="px-2 py-2 font-normal sm:px-3">
+              <th scope="col" className="px-1 py-2 font-normal sm:px-3">
                 {labels.table.grain}
               </th>
               <th
                 scope="col"
-                className="py-2 pr-4 pl-2 font-normal sm:pr-5 sm:pl-3"
+                className="py-2 pr-4 pl-1 font-normal sm:pr-5 sm:pl-3"
               >
                 {labels.table.banding}
               </th>
@@ -610,13 +610,13 @@ export function CutPlanViewer({
                       : "transition-colors hover:bg-raised"
                   }
                 >
-                  <td className="py-1 pr-2 pl-2 sm:pr-3 sm:pl-3">
+                  <td className="py-1 pr-1 pl-2 sm:pr-3 sm:pl-3">
                     <button
                       type="button"
                       aria-pressed={active}
                       onClick={() => select(item.mark)}
                       aria-label={format(labels.select, { mark: item.mark })}
-                      className="flex min-h-9 w-full items-center gap-3 rounded-sm px-2 py-1 text-left"
+                      className="flex min-h-9 w-full items-center gap-2 rounded-sm py-1 pr-1 pl-2 text-left sm:gap-3 sm:pr-2"
                     >
                       <span
                         className={
@@ -638,17 +638,17 @@ export function CutPlanViewer({
                   <td className="px-3 py-1 font-mono text-xs whitespace-nowrap text-fg-muted max-sm:hidden">
                     {item.length} × {item.width}
                   </td>
-                  <td className="px-2 py-1 text-right font-mono text-xs text-fg-muted sm:px-3">
+                  <td className="px-1 py-1 text-right font-mono text-xs text-fg-muted sm:px-3">
                     {item.quantity}
                   </td>
-                  <td className="px-2 py-1 font-mono text-xs text-fg-muted sm:px-3">
+                  <td className="px-1 py-1 font-mono text-xs text-fg-muted sm:px-3">
                     {item.grain
                       ? labels.yes
                       : rotated
                         ? `${labels.no} · ${labels.rotated}`
                         : labels.no}
                   </td>
-                  <td className="py-1 pr-4 pl-2 font-mono text-xs whitespace-nowrap text-fg-muted sm:pr-5 sm:pl-3">
+                  <td className="py-1 pr-4 pl-1 font-mono text-xs whitespace-nowrap text-fg-muted sm:pr-5 sm:pl-3">
                     {banding || "—"}
                   </td>
                 </tr>

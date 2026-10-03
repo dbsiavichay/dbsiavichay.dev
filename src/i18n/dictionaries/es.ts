@@ -226,6 +226,8 @@ export const es = {
     inventory: "Inventario",
     previous: "Etapa anterior",
     next: "Etapa siguiente",
+    previousShort: "Anterior",
+    nextShort: "Siguiente",
     inventoryLane: "Inventario existente · solo lectura",
     activities: "En paralelo",
     caption:

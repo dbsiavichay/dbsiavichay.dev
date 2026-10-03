@@ -1,0 +1,21 @@
+{
+  "source": "geist",
+  "unicodes": [
+    "U+0020-007E",
+    "U+00A0-00FF",
+    "U+2013-2014",
+    "U+2018-201F",
+    "U+2022",
+    "U+2026",
+    "U+2039-203A",
+    "U+20AC",
+    "U+2190-2193",
+    "U+21B5",
+    "U+2212",
+    "U+2264-2265"
+  ],
+  "fonts": {
+    "geist-sans/Geist-Variable.woff2": "geist-sans-latin.woff2",
+    "geist-mono/GeistMono-Variable.woff2": "geist-mono-latin.woff2"
+  }
+}

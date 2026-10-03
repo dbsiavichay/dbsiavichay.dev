@@ -1,6 +1,7 @@
 import { ChevronDown } from "lucide-react";
 
 import { routeEdge, type Diagram, type EdgeKind } from "@/lib/diagram";
+import { SEPARATOR } from "@/lib/separator";
 
 import { EdgeShape, GroupShape, NodeShape } from "./shapes";
 
@@ -142,7 +143,7 @@ export function DiagramText({ diagram, labels }: DiagramTextProps) {
               <li key={edge.id}>
                 {names.get(edge.from.node)} → {names.get(edge.to.node)}
                 <span className="text-fg-subtle">
-                  {" · "}
+                  {SEPARATOR}
                   {edge.label ?? labels.legend[edge.kind]}
                 </span>
               </li>

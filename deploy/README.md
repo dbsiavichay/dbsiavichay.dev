@@ -69,7 +69,11 @@ baked into the image and validated by `src/lib/env.ts`.
 | --------------------------------- | ----------------------------------------------------- | ------------------------------------------------ |
 | GitHub → environment `production` | `VPS_HOST`, `VPS_SSH_PORT`, `VPS_USER`, `VPS_SSH_KEY` | How CI reaches the VPS. `VPS_USER` is `deploy`.  |
 | GitHub → `GITHUB_TOKEN`           | `packages: write` (publish job only)                  | Pushes to `ghcr.io/dbsiavichay/dbsiavichay.dev`. |
-| VPS, `deploy`'s docker login      | GHCR read token (already there for Grazia)            | Only needed while the package is private.        |
+
+The VPS holds no credential of the portfolio's: the package is public and is pulled
+anonymously. **Never run `docker login ghcr.io` on the VPS** for it. Docker keeps one
+credential per registry, so a login with another account replaces the one Grazia's
+deploys use to pull its private images.
 
 `VPS_SSH_KEY` reaches the `deploy` user, which is in the `docker` group: treat it as a
 root credential on the VPS.
@@ -128,13 +132,25 @@ gh secret set VPS_USER     -R $R --env production --body deploy
 gh secret set VPS_SSH_KEY  -R $R --env production < ~/.ssh/portfolio_ci
 ```
 
-### 5. Merge, and make the package public
+`gh secret set --env production` stores them in the `production` environment, which the
+`deploy` job runs in. A required reviewer on that environment (Settings → Environments →
+`production`) makes every deploy wait for an approval in Actions. It is optional: without
+one, every merge to `master` deploys on its own.
+
+### 5. Merge, and check the package is public
 
 Merge to `master` and watch Actions. The first `publish` creates the package
-`ghcr.io/dbsiavichay/dbsiavichay.dev`, and GHCR creates packages as private. Either make
-it public (package settings → _Change visibility_; the repo is public anyway), or confirm
-that the VPS's `docker login` belongs to an account that can read it. If the first deploy
-stopped at the pull, fix that and use _Re-run failed jobs_.
+`ghcr.io/dbsiavichay/dbsiavichay.dev`; this repo's came out public, like the repository.
+The VPS pulls it anonymously, so it has to stay public. Check from any machine, without
+your own credentials:
+
+```bash
+DOCKER_CONFIG=$(mktemp -d) docker manifest inspect ghcr.io/dbsiavichay/dbsiavichay.dev:latest
+```
+
+If that is denied, make the package public (package settings → _Change visibility_) and
+use _Re-run failed jobs_. Don't log the VPS in to GHCR instead (see
+[Configuration and secrets](#configuration-and-secrets)).
 
 ## Day to day
 
@@ -180,7 +196,19 @@ While it is up, the site answers at `https://dbsiavichay.dev:8543` for anything 
 resolves that name to `127.0.0.1`, e.g.
 `curl -k --resolve dbsiavichay.dev:8543:127.0.0.1 https://dbsiavichay.dev:8543/en`.
 
-## Sharing the edge with grazia-infra
+## Sharing the VPS with Grazia
+
+Grazia runs in production on the same server, behind the same edge. A mistake here takes
+down a client's system, not only the portfolio.
+
+- A portfolio deploy recreates only its own container (`/opt/portfolio`, compose project
+  `portfolio`). It touches the edge only when `portfolio.caddy` changed.
+- Grazia's deploys run `/opt/edge/apply.sh` too. Don't merge a change to
+  `portfolio.caddy` while a Grazia deploy is running.
+- Never `docker login ghcr.io` on the VPS (see
+  [Configuration and secrets](#configuration-and-secrets)).
+
+### The edge
 
 - `grazia-infra`'s deploy extracts its `edge/` folder over `/opt/edge` without deleting
   anything, so `portfolio.caddy` survives Grazia's deploys.
@@ -195,3 +223,25 @@ resolves that name to `127.0.0.1`, e.g.
 - `grazia-infra`'s own docs suggest moving `edge/` to a repo of its own once a second
   project deploys from another repo. That is still the cleaner end state; the only change
   here would be where `portfolio.caddy` ships from.
+
+## Removing the portfolio
+
+First disable the `ci` workflow (Actions → _ci_ → _Disable workflow_), or the next push to
+`master` puts the site back. Then, on the VPS as `deploy`, take the route out of the edge
+before stopping the container:
+
+```bash
+rm /opt/edge/caddy/sites/portfolio.caddy
+/opt/edge/apply.sh
+cd /opt/portfolio && docker compose down
+```
+
+Grazia keeps running throughout. To remove everything else:
+
+- the images: `docker images ghcr.io/dbsiavichay/dbsiavichay.dev` lists them; remove
+  those by name. Never `docker image prune -a` (or `docker system prune -a`) here: it
+  also deletes the tagged images Grazia keeps so that a rollback needs no pull.
+- the CI key: the line ending in `github-actions@dbsiavichay.dev` in `deploy`'s
+  `~/.ssh/authorized_keys`;
+- the directory: `ssh ubuntu@<vps> 'sudo rm -r /opt/portfolio'`;
+- the DNS records at Spaceship.
