@@ -1,13 +1,11 @@
-import { pending } from "@/lib/pending";
-
-{/* El salón nunca se nombra. El nombre del producto solo se usa cuando esté confirmado. */}
+{/* El salón nunca se nombra. El producto, Grazia, sí: Denis lo confirmó. */}
 
 export const meta = {
-  title: "Gestión de salón",
+  title: "Grazia",
   tagline:
     "Agenda, pagos y caja para un salón de belleza, pensado para el teléfono",
   summary:
-    "Agenda, clientes, servicios, caja, gastos y fotos para un salón de belleza, diseñado primero para el teléfono, con las reglas de negocio aplicadas donde no se pueden saltar.",
+    "Agenda, clientes, servicios, caja, gastos y fotos para un salón de belleza, en producción y diseñado primero para el teléfono, con las reglas de negocio aplicadas donde no se pueden saltar.",
   relation: "client",
   role: "Ingeniería completa: producto, código y operación",
   period: { start: 2026, end: 2026 },
@@ -27,16 +25,13 @@ export const meta = {
   ],
   tier: "standard",
   order: 3,
-  unconfirmed: [
-    pending("Salon: can the product name be published? Is it in production?"),
-  ],
 };
 
 ## El negocio
 
 Un salón de belleza necesitaba un solo lugar para todo su día: la agenda, los clientes y su historial, los servicios y sus precios, el dinero que entra, el que sale y las fotos de antes y después. La aplicación está pensada primero para el teléfono.
 
-La construí solo en 2026: producto, API, aplicación web y el servidor donde está pensada para correr. Aquí no se nombra al salón, ni al producto, hasta que se confirme que se pueden publicar.
+La construí solo en 2026: producto, API, aplicación web y el servidor donde corre, ya en producción. El producto se llama Grazia; el salón no se nombra aquí.
 
 ## Reglas que viven donde nada puede saltarlas
 
@@ -81,7 +76,7 @@ Esa decisión es el tema de [Eliminar la arquitectura que no hacía falta](/es/n
 
 ## Operación en un VPS
 
-- **Un edge compartido.** Un solo Caddy, en su propio proyecto de Compose, es dueño de los puertos 80 y 443 y termina TLS para todos los sitios del servidor. Cada proyecto se une a una red externa `edge` con sus propios alias y agrega un archivo a los sitios del proxy; su base de datos nunca entra a esa red. Este portafolio está planeado para correr detrás del mismo edge.
+- **Un edge compartido.** Un solo Caddy, en su propio proyecto de Compose, es dueño de los puertos 80 y 443 y termina TLS para todos los sitios del servidor. Cada proyecto se une a una red externa `edge` con sus propios alias y agrega un archivo a los sitios del proxy; su base de datos nunca entra a esa red. Este portafolio corre detrás del mismo edge.
 - **El servidor nunca compila.** GitHub Actions corre los tests, construye las imágenes y las publica en GHCR; el servidor solo las descarga. La SPA y la API comparten un solo origen.
 - **Los deploys hacen rollback.** El script de deploy espera a que el contenedor nuevo esté sano y, si no lo está, restaura el tag de la imagen anterior. Un rollback restaura la imagen, nunca el esquema, así que las migraciones se escriben en dos tiempos (expand y contract) y la imagen anterior sigue funcionando con el esquema nuevo.
 - **Los backups se ensayan.** Un dump programado y un simulacro de restauración que carga el más reciente en una base temporal, lo verifica y la elimina.

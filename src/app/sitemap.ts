@@ -1,16 +1,16 @@
 import type { MetadataRoute } from "next";
 
 import { localeTags, locales } from "@/i18n/config";
-import { contentKinds, getSlugs } from "@/lib/content";
+import { contentKinds, contentPath, getSlugs } from "@/lib/content";
 import { env } from "@/lib/env";
 import { absoluteUrl, localePath } from "@/lib/seo";
 
-/** Routes inside each locale: the home, every case study and every note. */
+/** Routes inside each locale: the home, every case study, note and page. */
 function routes(): string[] {
   return [
     "",
     ...contentKinds.flatMap((kind) =>
-      getSlugs(kind).map((slug) => `/${kind}/${slug}`),
+      getSlugs(kind).map((slug) => contentPath(kind, slug)),
     ),
   ];
 }

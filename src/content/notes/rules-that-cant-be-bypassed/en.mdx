@@ -16,7 +16,7 @@ So when a rule matters, I put it at the lowest level that can express it, and le
 
 ## In the database
 
-**Double booking, in the salon app.** Checking the calendar in Python and then writing to it leaves a window: two requests that both read before either writes will both pass. That's not a theoretical race — it's two people confirming the same slot at the same second. A PostgreSQL **exclusion constraint** over each appointment's time range has no such window. Only the statuses that occupy the chair take part, and an explicit, permissioned flag lets someone say two clients can share a station.
+**Double booking, in Grazia, the salon app.** Checking the calendar in Python and then writing to it leaves a window: two requests that both read before either writes will both pass. That's not a theoretical race — it's two people confirming the same slot at the same second. A PostgreSQL **exclusion constraint** over each appointment's time range has no such window. Only the statuses that occupy the chair take part, and an explicit, permissioned flag lets someone say two clients can share a station.
 
 **Reasons for money that moves.** A discount without a reason is an unexplained hole in the till, so the database refuses it, and the same goes for an extra charge. A refund must point at the payment it corrects, and a check constraint ties that pointer to the kind of row.
 
@@ -26,7 +26,7 @@ Some rules are better enforced by what the data model makes impossible to expres
 
 - **Payments are append-only.** Deleting one is refused, and no edit changes its amount. Correcting money means adding a refund, so the history of the till can be read but not rewritten.
 - **Prices are frozen.** An appointment keeps the price its services had when it was booked, and a Maderable order keeps a snapshot of its plan and its prices. A later price change can't reach either.
-- **State changes go through one door.** In the salon app, an appointment changes status in a single place, which writes its history and its outbox event in the same transaction. There is no second path that could forget one of them.
+- **State changes go through one door.** In Grazia, an appointment changes status in a single place, which writes its history and its outbox event in the same transaction. There is no second path that could forget one of them.
 
 ## In the service, as the backstop
 

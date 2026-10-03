@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 import type { MDXComponents, MDXContent } from "mdx/types";
@@ -8,7 +8,12 @@ import { describe, expect, it, vi } from "vitest";
 import { navSections } from "@/components/navigation/nav-items";
 import { diagrams } from "@/data/diagrams";
 import { locales, type Locale } from "@/i18n/config";
-import { contentKinds, getSlugs, type ContentKind } from "@/lib/content";
+import {
+  contentKinds,
+  contentPath,
+  getSlugs,
+  type ContentKind,
+} from "@/lib/content";
 import { extractBody, extractHeadings } from "@/lib/mdx-source";
 // Aliased: despite its name it is a plain function, not a hook.
 import { useMDXComponents as mdxComponents } from "@/mdx-components";
@@ -28,6 +33,13 @@ const root = path.join(process.cwd(), "src", "content");
 const entries = contentKinds.flatMap((kind) =>
   getSlugs(kind).map((slug) => ({ kind, slug })),
 );
+
+/** Every page a body may link to, without its language: "/projects/sim". */
+const routes = entries.map(({ kind, slug }) => contentPath(kind, slug));
+
+/** Links into this site's own repository, on its default branch. */
+const SOURCE_LINK =
+  /\]\(https:\/\/github\.com\/dbsiavichay\/dbsiavichay\.dev\/blob\/master\/([^)\s#]+)\)/g;
 
 function sourceOf(kind: ContentKind, slug: string, locale: Locale) {
   return readFileSync(path.join(root, kind, slug, `${locale}.mdx`), "utf8");
@@ -84,14 +96,22 @@ describe.each(entries)("$kind/$slug", ({ kind, slug }) => {
     );
     for (const href of links) {
       const [pathname = "", anchor] = href.split("#");
-      const [, lang, section, target] = pathname.split("/");
+      const [, lang, ...rest] = pathname.split("/");
       expect(lang, href).toBe(locale);
-      if (section === undefined) {
+      if (rest.length === 0) {
         if (anchor) expect(navSections, href).toContain(anchor);
         continue;
       }
-      expect(contentKinds, href).toContain(section);
-      expect(getSlugs(section as ContentKind), href).toContain(target);
+      expect(routes, href).toContain(`/${rest.join("/")}`);
+    }
+  });
+
+  it("links only to files that exist in this repository", () => {
+    for (const locale of locales) {
+      const body = extractBody(sourceOf(kind, slug, locale));
+      for (const [, file] of body.matchAll(SOURCE_LINK)) {
+        expect(existsSync(path.join(process.cwd(), file!)), file).toBe(true);
+      }
     }
   });
 

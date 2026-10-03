@@ -1,0 +1,68 @@
+export const meta = {
+  title: "Cómo está hecho este sitio",
+  summary:
+    "Este sitio es un pequeño sistema en sí mismo: contenido verificado por tests, interactivo solo donde aporta, con presupuestos que se cumplen y desplegado junto a la producción de un cliente. Su código es público.",
+};
+
+{/* Cada afirmación de aquí debe coincidir con el repositorio. Las cifras son de este sitio, nunca de un cliente. */}
+
+## Un portafolio que se puede inspeccionar
+
+Todo lo demás en este sitio describe sistemas que solo puedo mostrar con palabras y dibujos. Este se puede abrir: su [código](https://github.com/dbsiavichay/dbsiavichay.dev) es público, y el panel al inicio de la [página principal](/es) se lee del build que produjo la página que estás leyendo: commit, fecha de compilación y toolchain. Nada de eso está escrito a mano.
+
+Es una aplicación Next.js en TypeScript que prerenderiza cada página en dos idiomas. No tiene base de datos ni formularios: el contenido son archivos del repositorio, y el contacto es una dirección de email. Un sitio así no necesita más, así que no tiene más. Lo que sí tiene cumple el mismo estándar que el trabajo para clientes.
+
+## Contenido que no se desvía
+
+La regla del contenido es la regla del código: un dato se escribe una vez, y un test se da cuenta cuando algo sale mal.
+
+- **Cada afirmación apunta a su evidencia.** Cada capacidad, paso del proceso, empleo y tecnología del stack nombra el case study o el empleo que lo respalda. Un test falla si una referencia apunta a algo que no existe.
+- **Nada sin confirmar se publica.** Un dato que no he confirmado se escribe como un valor `pending` tipado, nunca como una suposición. Se ve como un badge durante el desarrollo, desaparece de los builds de producción y CI lista lo que falta.
+- **Dos idiomas, exigidos por los tipos.** Los textos de la interfaz viven en dos diccionarios tipados, y el contenido estructurado se escribe con las dos traducciones lado a lado: si falta una, es un error de tipos, no una etiqueta en blanco. Cada artículo tiene un archivo en inglés y otro en español, y los tests exigen las mismas secciones en ambos, con cada enlace del índice llegando a su título.
+- **Lo confidencial se queda fuera.** [Maderable](/es/projects/maderable) permite publicar su nombre y su arquitectura, nunca sus cifras, así que un test rechaza montos, porcentajes y tiempos en todo lo escrito sobre ese proyecto. Otro test rechaza nombres que deben seguir privados. Los compara contra hashes SHA-256, porque una lista en texto plano en un repositorio público publicaría justo lo que protege.
+
+## Interactivo solo donde aporta
+
+Las páginas son React Server Components y llegan como HTML. El JavaScript va solo donde algo responde a quien lee: el menú, el selector de idioma, la búsqueda con ⌘K, copiar el email y las figuras dentro de los case studies.
+
+- **El plano de corte es un árbol de guillotina.** El plano de corte del case study de Maderable es uno que una sierra podría cortar de verdad, porque no se dibuja con coordenadas. Se describe como un árbol de cortes de guillotina y su geometría se deriva en el build. Los tests rechazan un plano con piezas que se solapan, una veta que rota o un corte que atraviesa una pieza; el navegador solo recibe el resultado.
+- **React Flow se carga cuando lo pides.** Dos diagramas de arquitectura se pueden explorar moviendo y ampliando. Hasta que alguien presiona _Explorar_, cada uno es un SVG generado con los mismos datos y el mismo enrutado de conectores, así que ambos modos dibujan exactamente lo mismo, y la librería interactiva ni siquiera se descarga. Un test end-to-end verifica que no se descargue.
+- **Búsqueda sin librería.** ⌘K es un `<dialog>` nativo con el patrón combobox y listbox. El navegador ya resuelve el top layer, el foco atrapado y Escape, y el código del diálogo se carga la primera vez que se abre.
+- **Movimiento en CSS.** Las entradas son keyframes y los efectos al hacer scroll son scroll-driven animations, sin JavaScript, y ambos respetan el movimiento reducido. Al hacer scroll el contenido solo se desplaza, nunca se desvanece, así que el texto no baja de su contraste a mitad de una animación.
+
+## Presupuestos en vez de buenas intenciones
+
+Cada pull request corre Lighthouse con un perfil de teléfono y falla por debajo de 95 en performance, o por debajo de 100 en accesibilidad, buenas prácticas y SEO. También cuenta bytes: como máximo 150 KB de JavaScript en la página principal, 165 KB en un artículo y 70 KB de fuentes.
+
+Los presupuestos ya cambiaron decisiones. Geist se sirve en subsets latinos recortados para este sitio, así que las dos fuentes que precarga cada página pasaron de 138 KB a 62 KB, y un test falla si el sitio llega a escribir un carácter que los subsets no cubren. La foto de la página principal se recorta y se codifica una sola vez, al doble del tamaño en que se muestra, así que el servidor nunca redimensiona imágenes.
+
+Playwright abre cada página en los dos idiomas, en un escritorio y en un teléfono emulado. Corre axe para la accesibilidad y revisa la navegación con teclado, el movimiento reducido y el layout en ocho anchos, de 320 a 1920 píxeles: nada hace scroll lateral salvo un grupo con nombre al que llega el teclado, como un diagrama ancho.
+
+## De un commit a producción
+
+Un push a `master` despliega. El [pipeline](https://github.com/dbsiavichay/dbsiavichay.dev/blob/master/.github/workflows/ci.yml) llega ahí por etapas:
+
+1. **Revisiones en paralelo.** Formato, lint, tipos y tests unitarios; la suite end-to-end y Lighthouse contra el build de producción; y la propia configuración del deploy: los scripts de shell pasan por shellcheck, los archivos de Compose se renderizan y el sitio de Caddy se valida y se formatea.
+2. **Un ensayo.** La imagen de Docker se construye y se levanta con el archivo de Compose real, detrás de un Caddy que aplica los headers de seguridad del edge de producción, y después se prueba: salud, redirecciones, headers, el 404, el filesystem de solo lectura y los logs.
+3. **La misma imagen, publicada.** La imagen que pasó el ensayo se guarda y se sube al registro tal cual, sin reconstruirla, así que lo que corre es lo que se probó.
+4. **Un deploy que puede dar marcha atrás.** Por SSH, [`deploy.sh`](https://github.com/dbsiavichay/dbsiavichay.dev/blob/master/deploy/scripts/deploy.sh) descarga el tag nuevo, lo levanta y espera a que esté sano. Si no lo está, el script restaura el tag anterior. Solo entonces [`apply-edge.sh`](https://github.com/dbsiavichay/dbsiavichay.dev/blob/master/deploy/scripts/apply-edge.sh) instala la ruta del sitio en el proxy.
+5. **Una verificación desde afuera.** El último paso entra por DNS, TLS y el proxy, y pasa solo si `/healthz` reporta el commit recién publicado.
+
+El servidor nunca compila nada ni guarda credenciales de git. Solo descarga imágenes.
+
+## De invitado en el servidor de un cliente
+
+El sitio corre en el mismo VPS que [Grazia](/es/projects/salon), que está en producción. Un solo Caddy es dueño de los puertos 80 y 443 y termina TLS para todos los sitios del servidor; cada proyecto agrega un archivo a sus sitios y se une a una red de Docker compartida. Ser invitado define la configuración:
+
+- **El contenedor puede hacer muy poco.** Filesystem de solo lectura con una pequeña caché en memoria, todas las capabilities de Linux eliminadas, sin escalada de privilegios y con un límite de 256 MB de memoria. Next.js está configurado para no escribir a disco las páginas que renderiza al vuelo, así que una avalancha de URLs inventadas no puede llenarlo.
+- **Una ruta rota no puede bloquear al vecino.** Cada deploy de Grazia recarga el proxy compartido, así que el script del portafolio solo deja en disco un archivo de sitio que Caddy ya aceptó, y devuelve el anterior si Caddy lo rechaza.
+- **Sin credenciales con las que chocar.** La imagen del portafolio es pública, así que el servidor la descarga sin iniciar sesión en el registro y nunca toca el login del que depende el otro proyecto.
+
+## Trade-offs, por escrito
+
+- **Un servidor Node donde bastaban archivos estáticos.** Todas las páginas se prerenderizan, así que un export estático servido por Caddy habría funcionado, con menos cosas que operar. Elegí el servidor standalone para operar el sitio como opero una aplicación —un endpoint de salud, un status 404 real en cada idioma, una imagen que desplegar y revertir—, pero el export estático era una opción válida y más simple.
+- **`'unsafe-inline'` en la política de seguridad de contenido.** Next.js inserta scripts inline en las páginas prerenderizadas, y un nonce obligaría a renderizar cada página al vuelo. Sin input de usuarios ni scripts de terceros, mantuve el prerender y acepté una política más débil.
+- **Un instante de 502.** Un deploy recrea el único contenedor, y el proxy responde 502 mientras arranca el servidor nuevo: cerca de medio segundo en el ensayo local. Un deploy blue-green lo eliminaría; para un portafolio, costaría más de lo que aporta.
+- **El proxy compartido vive en el repositorio de un cliente.** El edge es parte de la infraestructura de Grazia, y el portafolio instala ahí su propio archivo de sitio. Funciona con dos proyectos. Con un tercero, el edge debería pasar a un repositorio propio.
+
+Las decisiones detrás de todo esto, con las alternativas que descarté, están en el [plan](https://github.com/dbsiavichay/dbsiavichay.dev/blob/master/PORTFOLIO_PLAN.md) del proyecto, en español, tal como las escribí.

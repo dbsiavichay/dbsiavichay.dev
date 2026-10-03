@@ -5,6 +5,7 @@ import {
   type EvidenceContext,
 } from "@/components/home/evidence";
 import { job, project, thisSite } from "@/data/evidence";
+import type { ExperienceId } from "@/data/experience";
 import { getProjects } from "@/lib/content";
 
 describe("resolveEvidence", async () => {
@@ -31,15 +32,18 @@ describe("resolveEvidence", async () => {
     });
   });
 
-  it("names this site without a link", () => {
+  it("links this site to its colophon", () => {
     expect(resolveEvidence(thisSite, context)).toEqual({
       key: "site",
       label: "este sitio",
+      href: "/es/colophon",
     });
   });
 
-  it("refuses references to things that don't exist or aren't confirmed", () => {
+  it("refuses references to things that don't exist", () => {
     expect(() => resolveEvidence(project("nope"), context)).toThrow();
-    expect(() => resolveEvidence(job("current"), context)).toThrow();
+    expect(() =>
+      resolveEvidence(job("nope" as ExperienceId), context),
+    ).toThrow();
   });
 });

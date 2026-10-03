@@ -34,8 +34,8 @@ export const processSteps: readonly ProcessStep[] = [
       es: "Llevar las reglas al modelo, al nivel donde nada pueda saltárselas.",
     },
     example: {
-      en: "In the salon app, a PostgreSQL GiST exclusion constraint makes double booking impossible, and each appointment freezes its price.",
-      es: "En la app del salón, un constraint de exclusión GiST en PostgreSQL hace imposible el doble agendamiento, y cada cita congela su precio.",
+      en: "In Grazia, the salon app, a PostgreSQL GiST exclusion constraint makes double booking impossible, and each appointment freezes its price.",
+      es: "En Grazia, la app del salón, un constraint de exclusión GiST en PostgreSQL hace imposible el doble agendamiento, y cada cita congela su precio.",
     },
     evidence: project("salon"),
   },
@@ -86,8 +86,8 @@ export const processSteps: readonly ProcessStep[] = [
       es: "Quitar lo que no se justifica, incluido mi propio trabajo.",
     },
     example: {
-      en: "The salon app had multi-tenancy and a staff roster. Both were removed once the business turned out to be one salon, run by its owner alone.",
-      es: "La app del salón tenía multi-tenancy y un roster de profesionales. Ambos se retiraron cuando el negocio resultó ser un solo salón, sin más profesionales que la persona propietaria.",
+      en: "Grazia had multi-tenancy and a staff roster. Both were removed once the business turned out to be one salon, run by its owner alone.",
+      es: "Grazia tenía multi-tenancy y un roster de profesionales. Ambos se retiraron cuando el negocio resultó ser un solo salón, sin más profesionales que la persona propietaria.",
     },
     evidence: project("salon"),
   },

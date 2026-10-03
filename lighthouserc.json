@@ -7,7 +7,8 @@
         "http://127.0.0.1:3000/en",
         "http://127.0.0.1:3000/es",
         "http://127.0.0.1:3000/en/projects/maderable",
-        "http://127.0.0.1:3000/es/notes/following-a-request-across-kafka"
+        "http://127.0.0.1:3000/es/notes/following-a-request-across-kafka",
+        "http://127.0.0.1:3000/en/colophon"
       ],
       "numberOfRuns": 3,
       "settings": {
@@ -69,7 +70,7 @@
           }
         },
         {
-          "matchingUrlPattern": "/(projects|notes)/",
+          "matchingUrlPattern": "/(projects/|notes/|colophon$)",
           "assertions": {
             "resource-summary:script:size": [
               "error",

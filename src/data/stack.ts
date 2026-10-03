@@ -18,6 +18,7 @@ const maderable = project("maderable");
 const faclab = project("faclab");
 const salon = project("salon");
 const sim = project("sim");
+const konfio = job("konfio");
 const justo = job("justo");
 
 /** Grouped by role, no percentages. Each item names where it was used. */
@@ -26,8 +27,14 @@ export const stack: readonly TechnologyGroup[] = [
     id: "languages",
     title: { en: "Languages", es: "Lenguajes" },
     items: [
-      { name: "Python", usedIn: [maderable, faclab, salon, sim, justo] },
-      { name: "TypeScript", usedIn: [maderable, faclab, salon, thisSite] },
+      {
+        name: "Python",
+        usedIn: [maderable, faclab, salon, sim, konfio, justo],
+      },
+      {
+        name: "TypeScript",
+        usedIn: [maderable, faclab, salon, justo, thisSite],
+      },
       { name: "Node.js", usedIn: [faclab, justo] },
       { name: "Rust", usedIn: [maderable] },
     ],
@@ -38,6 +45,7 @@ export const stack: readonly TechnologyGroup[] = [
     items: [
       { name: "FastAPI", usedIn: [maderable, faclab, salon] },
       { name: "Django", usedIn: [sim, justo] },
+      { name: "Flask", usedIn: [konfio] },
       { name: "Django REST Framework", usedIn: [sim] },
       { name: "SQLAlchemy · Alembic", usedIn: [maderable, faclab, salon] },
       { name: "Fastify", usedIn: [faclab] },
@@ -48,10 +56,12 @@ export const stack: readonly TechnologyGroup[] = [
     id: "data",
     title: { en: "Data & messaging", es: "Datos y mensajería" },
     items: [
-      { name: "PostgreSQL", usedIn: [maderable, faclab, salon, sim] },
+      { name: "PostgreSQL", usedIn: [maderable, faclab, salon, sim, konfio] },
       { name: "Redis", usedIn: [maderable, sim] },
       { name: "Kafka", usedIn: [faclab] },
-      { name: "DynamoDB · S3", usedIn: [faclab] },
+      { name: "SNS · SQS", usedIn: [justo] },
+      { name: "DynamoDB", usedIn: [faclab, justo] },
+      { name: "S3", usedIn: [faclab] },
     ],
   },
   {
@@ -89,7 +99,8 @@ export const stack: readonly TechnologyGroup[] = [
     id: "observability",
     title: { en: "Observability", es: "Observabilidad" },
     items: [
-      { name: "OpenTelemetry", usedIn: [faclab] },
+      { name: "OpenTelemetry", usedIn: [faclab, justo] },
+      { name: "SigNoz", usedIn: [justo] },
       { name: "structlog · pino", usedIn: [faclab] },
     ],
   },

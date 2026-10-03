@@ -6,11 +6,11 @@ export const meta = {
   order: 5,
 };
 
-{/* El salón nunca se nombra, y el producto tampoco. */}
+{/* El salón nunca se nombra. El producto, Grazia, sí. */}
 
 ## Construida para un futuro
 
-Diseñé la app del salón como un producto para muchos salones, y sus primeros commits lo muestran. Al principio tenía:
+Diseñé Grazia, la app del salón, como un producto para muchos salones, y sus primeros commits lo muestran. Al principio tenía:
 
 - **Multi-tenancy**, hecha con cuidado: un listener global del ORM que inyectaba el tenant en cada consulta y **fallaba cerrado**, así que una consulta sin tenant en el contexto no devolvía nada. Los uniques y las claves foráneas llevaban el tenant, los emails eran únicos por tenant, y un login que coincidía con usuarios de dos tenants respondía con un error de ambigüedad.
 - **Sucursales**, asociadas al personal, las citas, los pagos y los gastos.

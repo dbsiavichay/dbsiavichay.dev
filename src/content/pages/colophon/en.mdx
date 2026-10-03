@@ -1,0 +1,68 @@
+export const meta = {
+  title: "How this site is built",
+  summary:
+    "This site is a small system of its own: content checked by tests, interactive only where it pays, held to budgets, and deployed next to a client's production. Its source is public.",
+};
+
+{/* Every claim here must match the repository. Figures are this site's own, never a client's. */}
+
+## A portfolio you can inspect
+
+Everything else on this site describes systems I can only show in words and drawings. This one you can open: its [source](https://github.com/dbsiavichay/dbsiavichay.dev) is public, and the panel at the top of the [home page](/en) is read from the build that produced the page you're reading — commit, build time, toolchain. Nothing in it is typed by hand.
+
+It's a Next.js app in TypeScript that prerenders every page in two languages. There's no database and no form: the content is files in the repository, and contact is an email address. A site like this doesn't need more, so it doesn't have more. What it does have is held to the same standard as client work.
+
+## Content that can't drift
+
+The rule for the content is the rule for the code: a fact is written once, and a test notices when it goes wrong.
+
+- **Claims point to their evidence.** Every capability, step of the process, job and technology in the stack names the case study or the job behind it. A test fails if a reference points at something that doesn't exist.
+- **Nothing unconfirmed is published.** A fact I haven't confirmed is written as a typed `pending` value, never as a guess. It shows as a badge while developing, disappears from production builds, and CI lists what's left.
+- **Two languages, enforced by types.** Interface text lives in two typed dictionaries, and structured content is written with both translations side by side: a missing one is a type error, not a blank label. Each article has an English and a Spanish file, and the tests require the same sections in both, with every contents link landing on its heading.
+- **What's confidential stays out.** [Maderable](/en/projects/maderable) allows its name and architecture to be published, never its figures, so a test rejects amounts, percentages and timings in anything written about it. Another test rejects names that must stay private. It checks them against SHA-256 hashes, because a plain list in a public repository would publish exactly what it protects.
+
+## Interactive only where it pays
+
+Pages are React Server Components and arrive as HTML. JavaScript goes only where something answers the reader: the menu, the language switch, the ⌘K search, copying the email, and the figures inside the case studies.
+
+- **The cut plan is a guillotine tree.** The cut plan in the Maderable case study is one a saw could actually cut, because it isn't drawn from coordinates. It's described as a tree of guillotine cuts and its geometry is derived at build time. The tests reject a plan where pieces overlap, the grain rotates or a cut crosses a piece; the browser only receives the result.
+- **React Flow loads when you ask for it.** Two architecture diagrams can be explored with pan and zoom. Until someone presses _Explore_, each one is an SVG generated from the same data and the same connector routing, so both modes draw exactly the same thing, and the interactive library isn't downloaded at all. An end-to-end test checks that it isn't.
+- **Search without a library.** ⌘K is a native `<dialog>` with the combobox and listbox pattern. The browser already handles the top layer, the focus trap and Escape, and the dialog's code loads the first time it opens.
+- **Motion in CSS.** Entrances are keyframes and scroll effects are scroll-driven animations, with no JavaScript, and both respect reduced motion. Scrolling only ever moves content, never fades it, so text doesn't dip below its contrast ratio halfway through an animation.
+
+## Budgets instead of good intentions
+
+Every pull request runs Lighthouse with a phone profile and fails below 95 for performance, or below 100 for accessibility, best practices and SEO. It also counts bytes: at most 150 KB of JavaScript on the home page, 165 KB on an article, and 70 KB of fonts.
+
+The budgets have already changed decisions. Geist is served as Latin subsets cut for this site, so the two fonts every page preloads went from 138 KB to 62 KB, and a test fails if the site ever writes a character the subsets don't cover. The portrait on the home page is cropped and encoded once, at twice the size it's shown, so the server never resizes images.
+
+Playwright opens every page in both languages, on a desktop and on an emulated phone. It runs axe for accessibility and checks keyboard navigation, reduced motion and the layout at eight widths, from 320 to 1920 pixels: nothing scrolls sideways unless it's a named group the keyboard can reach, like a wide diagram.
+
+## From a commit to production
+
+A push to `master` deploys. The [pipeline](https://github.com/dbsiavichay/dbsiavichay.dev/blob/master/.github/workflows/ci.yml) gets there in stages:
+
+1. **Checks in parallel.** Format, lint, types and unit tests; the end-to-end suite and Lighthouse against the production build; and the deploy configuration itself — the shell scripts through shellcheck, the Compose files rendered, the Caddy site validated and formatted.
+2. **A rehearsal.** The Docker image is built and started with the real Compose file, behind a Caddy that applies the production edge's security headers, and then probed: health, redirects, headers, the 404, the read-only filesystem and the logs.
+3. **The same image, published.** The image that passed the rehearsal is saved and pushed to the registry as it is, not rebuilt, so what runs is what was tested.
+4. **A deploy that can step back.** Over SSH, [`deploy.sh`](https://github.com/dbsiavichay/dbsiavichay.dev/blob/master/deploy/scripts/deploy.sh) pulls the new tag, starts it and waits for it to report healthy. If it doesn't, the script restores the previous tag. Only then does [`apply-edge.sh`](https://github.com/dbsiavichay/dbsiavichay.dev/blob/master/deploy/scripts/apply-edge.sh) install the site's route on the proxy.
+5. **A check from outside.** The last step goes through DNS, TLS and the proxy, and passes only when `/healthz` reports the commit that was just published.
+
+The server never builds anything and holds no git credentials. It only pulls images.
+
+## A guest on a client's server
+
+The site runs on the same VPS as [Grazia](/en/projects/salon), which is in production. One Caddy owns ports 80 and 443 and terminates TLS for every site on the server; each project adds one file to its sites and joins a shared Docker network. Being a guest shapes the setup:
+
+- **The container can do very little.** A read-only filesystem with a small in-memory cache, every Linux capability dropped, no privilege escalation and a 256 MB memory limit. Next.js is told not to write the pages it renders on request to disk, so a flood of made-up URLs can't fill one.
+- **A broken route can't block the neighbor.** Every Grazia deploy reloads the shared proxy, so the portfolio's script only leaves a site file on disk once Caddy has accepted it, and puts the previous one back if Caddy rejects it.
+- **No credentials to collide with.** The portfolio's image is public, so the server pulls it without logging in to the registry and never touches the login the other project relies on.
+
+## Trade-offs, written down
+
+- **A Node server where static files would do.** Every page is prerendered, so a static export served by Caddy would have worked, with less to run. I chose the standalone server to run the site the way I run an application — a health endpoint, a real 404 status in each language, an image to deploy and roll back — but the static export was a valid, simpler choice.
+- **`'unsafe-inline'` in the content security policy.** Next.js inlines scripts in prerendered pages, and a nonce would force every page to render on request. With no user input and no third-party scripts, I kept the prerendering and accepted the weaker policy.
+- **A moment of 502.** A deploy recreates the only container, and the proxy answers 502 while the new server starts: about half a second in the local rehearsal. Blue-green deploys would remove it; for a portfolio, they would cost more than they give.
+- **The shared proxy lives in a client's repository.** The edge is part of Grazia's infrastructure, and the portfolio installs its own site file into it. That works for two projects. With a third, the edge should move to a repository of its own.
+
+The decisions behind all of this, with the alternatives I discarded, are in the project's [plan](https://github.com/dbsiavichay/dbsiavichay.dev/blob/master/PORTFOLIO_PLAN.md), in Spanish, as I wrote them.

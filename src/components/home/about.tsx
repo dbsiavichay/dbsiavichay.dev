@@ -30,7 +30,19 @@ export async function About() {
             <p key={paragraph}>{paragraph}</p>
           ))}
         </div>
-        <div className="space-y-6">
+        <div className="grid content-start gap-8 sm:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] sm:items-start lg:grid-cols-1">
+          {/* A plain <img>: the photo is already sized and encoded (D34), and
+              next/image is a Client Component that would ship JS to render it. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={profile.photo.image.src}
+            width={profile.photo.image.width}
+            height={profile.photo.image.height}
+            alt={profile.photo.alt[locale]}
+            loading="lazy"
+            decoding="async"
+            className="h-auto w-full max-w-xs rounded-lg border border-line bg-surface"
+          />
           <dl className="space-y-6 text-sm">
             <div>
               <dt className="label-mono text-fg-subtle">{t.facts.basedIn}</dt>
@@ -66,7 +78,6 @@ export async function About() {
               <dd className="mt-1 text-fg">{t.facts.educationValue}</dd>
             </div>
           </dl>
-          <Pending value={profile.photo} />
         </div>
       </div>
     </Section>

@@ -1,5 +1,3 @@
-import { pending } from "@/lib/pending";
-
 export const meta = {
   title: "Maderable",
   tagline:
@@ -26,10 +24,11 @@ export const meta = {
     "La cotización viva se convierte en una orden inmutable, y un agente en Windows imprime sus etiquetas en las impresoras del taller.",
   ],
   tier: "featured",
+  live: {
+    href: "https://app.maderable.ec",
+    note: "La app del taller. Se usa con inicio de sesión.",
+  },
   order: 1,
-  unconfirmed: [
-    pending("Maderable: can the site link to the shop's public website?"),
-  ],
 };
 
 {/* Maderable es cliente: la arquitectura sí, las cifras y los benchmarks no. Nunca nombrar a los clientes del taller ni a su sistema de inventario existente. */}

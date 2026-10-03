@@ -1,9 +1,11 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { profile } from "@/data/profile";
 import { locales } from "@/i18n/config";
 import { getI18n } from "@/i18n/server";
 import { formatBuildTime, getBuildInfo } from "@/lib/build-info";
+import { pageHref } from "@/lib/content";
 import { SEPARATOR } from "@/lib/separator";
 import { cn } from "@/lib/utils";
 
@@ -15,7 +17,7 @@ const linkClass =
  * the build that rendered the page, not written by hand.
  */
 export async function SystemStatus({ className }: { className?: string }) {
-  const { dict } = await getI18n();
+  const { locale, dict } = await getI18n();
   const build = getBuildInfo();
   const t = dict.status;
 
@@ -82,7 +84,10 @@ export async function SystemStatus({ className }: { className?: string }) {
         ))}
       </dl>
       <p className="border-t border-line px-5 py-3 text-xs text-fg-subtle">
-        {t.caption}
+        {t.caption}{" "}
+        <Link href={pageHref(locale, "colophon")} className={linkClass}>
+          {t.colophon}
+        </Link>
       </p>
     </section>
   );

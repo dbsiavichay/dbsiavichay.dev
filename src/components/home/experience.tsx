@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Pending, PendingList } from "@/components/ui/pending";
 import { Section } from "@/components/ui/section";
 import { SectionHeader } from "@/components/ui/section-header";
-import { education, experience } from "@/data/experience";
+import { education, experience, type ExperienceEntry } from "@/data/experience";
 import type { Locale } from "@/i18n/config";
 import type { Localized } from "@/i18n/localized";
 import { getI18n } from "@/i18n/server";
@@ -28,7 +28,7 @@ export async function Experience({ evidence }: { evidence: EvidenceContext }) {
   const { locale, dict } = await getI18n();
   const t = dict.experience;
   // A job whose employer is not confirmed is not published at all.
-  const entries = experience.filter(
+  const entries: readonly ExperienceEntry[] = experience.filter(
     (entry) => !isPending(entry.organization) || shouldShowPending(),
   );
 
@@ -56,7 +56,7 @@ export async function Experience({ evidence }: { evidence: EvidenceContext }) {
                   presentLabel={dict.common.present}
                 />
               </p>
-              {"context" in entry ? (
+              {entry.context ? (
                 <p className="mt-1 text-sm text-fg-subtle">
                   {entry.context[locale]}
                 </p>
@@ -70,7 +70,7 @@ export async function Experience({ evidence }: { evidence: EvidenceContext }) {
                   <Text value={entry.organization} locale={locale} />
                 </span>
               </h3>
-              {"problem" in entry ? (
+              {entry.problem ? (
                 <p className="mt-3 text-fg-muted">
                   <span className="mr-2 label-mono text-fg-subtle">
                     {t.problem}
@@ -108,10 +108,7 @@ export async function Experience({ evidence }: { evidence: EvidenceContext }) {
                   <EvidenceLinks items={entry.evidence} context={evidence} />
                 </div>
               ) : null}
-              <PendingList
-                values={"unconfirmed" in entry ? entry.unconfirmed : undefined}
-                className="mt-5"
-              />
+              <PendingList values={entry.unconfirmed} className="mt-5" />
             </div>
           </li>
         ))}
