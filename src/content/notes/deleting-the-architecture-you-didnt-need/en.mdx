@@ -6,11 +6,11 @@ export const meta = {
   order: 5,
 };
 
-{/* The salon is never named, and neither is the product. */}
+{/* The salon is never named. The product, Grazia, can be. */}
 
 ## Built for a future
 
-I designed the salon app as a product for many salons, and its first commits showed it. Early on, it had:
+I designed Grazia, the salon app, as a product for many salons, and its first commits showed it. Early on, it had:
 
 - **Multi-tenancy**, done carefully: a global ORM listener that injected the tenant into every query and **failed closed**, so a query with no tenant in context returned nothing. Uniques and foreign keys carried the tenant, emails were unique per tenant, and a login that matched users in two tenants answered with an ambiguity error.
 - **Branches**, attached to staff, appointments, payments and expenses.

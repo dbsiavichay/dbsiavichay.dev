@@ -4,9 +4,11 @@ import { Container } from "@/components/ui/container";
 import { TextLink } from "@/components/ui/text-link";
 import { profile } from "@/data/profile";
 import { getI18n } from "@/i18n/server";
+import { pageHref } from "@/lib/content";
+import { SEPARATOR } from "@/lib/separator";
 
 export async function Footer() {
-  const { dict } = await getI18n();
+  const { locale, dict } = await getI18n();
   const year = new Date().getFullYear();
 
   return (
@@ -17,6 +19,10 @@ export async function Footer() {
         </p>
         <p>
           {dict.footer.builtWith}{" "}
+          <TextLink href={pageHref(locale, "colophon")}>
+            {dict.footer.colophon}
+          </TextLink>
+          {SEPARATOR}
           <TextLink href={profile.repository}>{dict.footer.source}</TextLink>
         </p>
         <a

@@ -1,3 +1,4 @@
+import { ArrowUpRight } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -11,6 +12,7 @@ import { NoteList } from "@/components/article/note-list";
 import { Badge } from "@/components/ui/badge";
 import { Container } from "@/components/ui/container";
 import { PendingList } from "@/components/ui/pending";
+import { TextLink } from "@/components/ui/text-link";
 import { getI18n } from "@/i18n/server";
 import {
   getBody,
@@ -26,6 +28,7 @@ import {
   openGraph,
   serializeJsonLd,
 } from "@/lib/seo";
+import { cn } from "@/lib/utils";
 
 export function generateStaticParams() {
   return getSlugs("projects").map((slug) => ({ slug }));
@@ -134,7 +137,9 @@ export default async function CaseStudyPage({
               )}
             </dd>
           </div>
-          <div className="bg-surface p-5 sm:col-span-2">
+          <div
+            className={cn("bg-surface p-5", !project.live && "sm:col-span-2")}
+          >
             <dt className="label-mono text-fg-subtle">{dict.work.stack}</dt>
             <dd className="mt-3">
               <ul className="flex flex-wrap gap-2">
@@ -146,6 +151,23 @@ export default async function CaseStudyPage({
               </ul>
             </dd>
           </div>
+          {project.live ? (
+            <div className="bg-surface p-5">
+              <dt className="label-mono text-fg-subtle">{t.live}</dt>
+              <dd className="mt-2">
+                <TextLink
+                  href={project.live.href}
+                  className="inline-flex items-center gap-1 font-mono"
+                >
+                  {new URL(project.live.href).host}
+                  <ArrowUpRight aria-hidden="true" className="size-3.5" />
+                </TextLink>
+                <p className="mt-2 text-sm text-fg-muted">
+                  {project.live.note}
+                </p>
+              </dd>
+            </div>
+          ) : null}
         </dl>
         <PendingList values={project.unconfirmed} className="mt-6" />
       </ArticleHeader>

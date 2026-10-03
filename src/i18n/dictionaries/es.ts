@@ -50,6 +50,7 @@ export const es = {
     viewCommit: "ver el commit en GitHub",
     caption:
       "Datos leídos del propio build al compilar el sitio. Nada de esto está escrito a mano.",
+    colophon: "Cómo está hecho este sitio",
   },
   capabilities: {
     eyebrow: "Qué construyo",
@@ -97,7 +98,7 @@ export const es = {
   experience: {
     eyebrow: "Experiencia",
     title: "Construyendo software desde 2013.",
-    lede: "Sector público, e-commerce y trabajo independiente. Cada entrada: el problema, lo que hice y, cuando está documentado, el resultado.",
+    lede: "Sector público, e-commerce, fintech y trabajo independiente. Cada entrada: el problema, lo que hice y, cuando está documentado, el resultado.",
     problem: "Problema",
     projects: "Proyectos",
     education: "Educación",
@@ -114,7 +115,7 @@ export const es = {
     title: "Entender el negocio, después construir.",
     paragraphs: [
       "Soy Denis, software engineer en Ecuador. Empecé en 2013 con una app de pedidos para un negocio local y después estuve seis años en el Municipio del cantón Morona, donde pasé de analista de sistemas a liderar el equipo que construyó el SIM.",
-      "Luego llegué a Jüsto, una empresa de e-commerce de México, donde trabajé en remoto durante su paso a microservicios. Hoy combino un empleo con proyectos para clientes y Faclab, mi producto propio.",
+      "Luego llegué a Jüsto, una empresa de e-commerce de México, donde trabajé en remoto durante su paso a microservicios. Desde noviembre de 2024 soy senior fullstack engineer en Konfio, una fintech mexicana, en el equipo detrás de sus tarjetas de crédito. En paralelo, construyo para clientes y sigo con Faclab, mi producto propio.",
       "Lo que une todo: quiero entender cómo funciona un negocio antes de modelarlo, y me quedo para lo que pasa después del deploy.",
     ],
     facts: {
@@ -136,6 +137,7 @@ export const es = {
   footer: {
     source: "Código fuente",
     builtWith: "Hecho con Next.js y prerenderizado.",
+    colophon: "Cómo está hecho",
     backToTop: "Volver arriba",
   },
   article: {
@@ -147,8 +149,14 @@ export const es = {
     eyebrow: "Case study",
     back: "Proyectos",
     period: "Período",
+    live: "En producción",
     relatedNotes: "Notas de este proyecto",
     next: "Siguiente case study",
+  },
+  colophon: {
+    eyebrow: "Colofón",
+    back: "Inicio",
+    subtitle: "Probado, medido y desplegado como el trabajo para clientes.",
   },
   note: {
     eyebrow: "Nota de ingeniería",
@@ -173,6 +181,7 @@ export const es = {
     github: "GitHub",
     linkedin: "LinkedIn",
     source: "Código fuente de este sitio",
+    colophon: "Cómo está hecho este sitio",
     hints: { navigate: "moverte", open: "abrir", close: "cerrar" },
   },
   cutPlan: {

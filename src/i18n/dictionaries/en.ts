@@ -55,6 +55,7 @@ export const en = {
     viewCommit: "view the commit on GitHub",
     caption:
       "Read from the build itself when the site was compiled. Nothing here is typed by hand.",
+    colophon: "How this site is built",
   },
   capabilities: {
     eyebrow: "What I build",
@@ -102,7 +103,7 @@ export const en = {
   experience: {
     eyebrow: "Experience",
     title: "Building software since 2013.",
-    lede: "Public sector, e-commerce and independent work. Each entry: the problem, what I did and, where it's documented, the result.",
+    lede: "Public sector, e-commerce, fintech and independent work. Each entry: the problem, what I did and, where it's documented, the result.",
     problem: "Problem",
     projects: "Projects",
     education: "Education",
@@ -119,7 +120,7 @@ export const en = {
     title: "Understand the business, then build.",
     paragraphs: [
       "I'm Denis, a software engineer based in Ecuador. I started in 2013 with an ordering app for a local business, then spent six years at the Municipality of Morona, where I went from systems analyst to leading the team that built SIM.",
-      "From there I joined Jüsto, an e-commerce company in Mexico, working remotely as it moved to microservices. Today I combine a job with client projects and Faclab, my own product.",
+      "From there I joined Jüsto, an e-commerce company in Mexico, working remotely as it moved to microservices. Since November 2024 I've been a senior fullstack engineer at Konfio, a Mexican fintech, on the team behind its credit cards. Alongside it, I build for clients and keep working on Faclab, my own product.",
       "The thread through all of it: I want to understand how a business works before I model it, and I stay for what happens after the deploy.",
     ],
     facts: {
@@ -141,6 +142,7 @@ export const en = {
   footer: {
     source: "Source code",
     builtWith: "Built with Next.js and prerendered.",
+    colophon: "How it's built",
     backToTop: "Back to top",
   },
   article: {
@@ -152,8 +154,14 @@ export const en = {
     eyebrow: "Case study",
     back: "Selected work",
     period: "Period",
+    live: "In production",
     relatedNotes: "Notes from this project",
     next: "Next case study",
+  },
+  colophon: {
+    eyebrow: "Colophon",
+    back: "Home",
+    subtitle: "Tested, budgeted and deployed like client work.",
   },
   note: {
     eyebrow: "Engineering note",
@@ -178,6 +186,7 @@ export const en = {
     github: "GitHub",
     linkedin: "LinkedIn",
     source: "Source code of this site",
+    colophon: "How this site is built",
     hints: { navigate: "navigate", open: "open", close: "close" },
   },
   cutPlan: {

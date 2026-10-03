@@ -10,13 +10,13 @@ import { extractBody } from "@/lib/mdx-source";
 
 /**
  * Words that must never be published: the shop's existing inventory system,
- * the names of the salon's product, a customer of the shop. The repository is
- * public, so they are listed as SHA-256 hashes rather than spelled out.
+ * an earlier name of the salon's product, a customer of the shop. The
+ * repository is public, so they are listed as SHA-256 hashes rather than
+ * spelled out. The product's current name, Grazia, may be published.
  */
 const FORBIDDEN = new Set([
   "c58106bbcfc89023cb2d2a773138bbe6ed8feba06241cdc4fcacf7df404c00c3",
   "62bd9942f0b0662f25e5b58771b6d2da3b9103b8545fb89ef986fe508cd0bd40",
-  "1ed29574104b4362b25e1d9e7501ea3486e87e404ee22891e024917127ec963e",
   "7417f16d7781bfc49fe796668aa57a231812146a528ce3cb4c41ddb543a33bb1",
 ]);
 

@@ -10,8 +10,10 @@ import type { Locale } from "@/i18n/config";
 import { extractHeadings, readingMinutes, type Heading } from "./mdx-source";
 import {
   noteMetaSchema,
+  pageMetaSchema,
   projectMetaSchema,
   type NoteMeta,
+  type PageMeta,
   type ProjectMeta,
 } from "./schemas";
 
@@ -19,8 +21,11 @@ import {
  * Long-form content lives in `src/content/<kind>/<slug>/<locale>.mdx`. Each
  * folder is an entry and its name is the slug, so adding a project is adding
  * a folder. Pages are prerendered, so this only runs during the build.
+ *
+ * Projects and notes are routed by slug under their kind; a page (the
+ * colophon) has a route of its own, at `/<locale>/<slug>`.
  */
-export const contentKinds = ["projects", "notes"] as const;
+export const contentKinds = ["projects", "notes", "pages"] as const;
 
 export type ContentKind = (typeof contentKinds)[number];
 
@@ -43,6 +48,7 @@ const importers: Record<
   projects: (slug, locale) =>
     import(`@/content/projects/${slug}/${locale}.mdx`),
   notes: (slug, locale) => import(`@/content/notes/${slug}/${locale}.mdx`),
+  pages: (slug, locale) => import(`@/content/pages/${slug}/${locale}.mdx`),
 };
 
 async function loadMeta<S extends z.ZodType>(
@@ -70,12 +76,23 @@ export type Project = ProjectMeta & {
 
 export type Note = NoteMeta & { slug: string; href: string };
 
+export type Page = PageMeta & { slug: string; href: string };
+
+/** Where an entry lives inside a language: "/projects/faclab", "/colophon". */
+export function contentPath(kind: ContentKind, slug: string) {
+  return kind === "pages" ? `/${slug}` : `/${kind}/${slug}`;
+}
+
 export function projectHref(locale: Locale, slug: string) {
-  return `/${locale}/projects/${slug}`;
+  return `/${locale}${contentPath("projects", slug)}`;
 }
 
 export function noteHref(locale: Locale, slug: string) {
-  return `/${locale}/notes/${slug}`;
+  return `/${locale}${contentPath("notes", slug)}`;
+}
+
+export function pageHref(locale: Locale, slug: string) {
+  return `/${locale}${contentPath("pages", slug)}`;
 }
 
 export async function getProject(
@@ -94,6 +111,11 @@ export async function getProject(
 export async function getNote(slug: string, locale: Locale): Promise<Note> {
   const meta = await loadMeta("notes", noteMetaSchema, slug, locale);
   return { ...meta, slug, href: noteHref(locale, slug) };
+}
+
+export async function getPage(slug: string, locale: Locale): Promise<Page> {
+  const meta = await loadMeta("pages", pageMetaSchema, slug, locale);
+  return { ...meta, slug, href: pageHref(locale, slug) };
 }
 
 const byOrder = (a: { order: number }, b: { order: number }) =>

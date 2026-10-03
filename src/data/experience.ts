@@ -1,5 +1,5 @@
 import type { Localized } from "@/i18n/localized";
-import { pending, type Confirmable, type Pending } from "@/lib/pending";
+import type { Confirmable, Pending } from "@/lib/pending";
 
 import { project, type Evidence } from "./evidence";
 
@@ -29,21 +29,11 @@ export type ExperienceEntry = {
 };
 
 /**
- * Work history, newest first. Sources: CV (June 2024), LinkedIn export and
- * git history. Results only appear where a source documents them.
+ * Work history, newest first by start date. Sources: CV (June 2024), LinkedIn
+ * export, git history and Denis's answers (Konfio, the end of Jüsto and its
+ * stack). Results only appear where a source documents them.
  */
 export const experience = [
-  {
-    id: "current",
-    organization: pending(
-      "current employer: company, or a description of the sector if it is confidential",
-    ),
-    role: pending("current role"),
-    period: { start: pending("start date of the current job"), end: "present" },
-    highlights: { en: [], es: [] },
-    stack: [],
-    evidence: [],
-  },
   {
     id: "independent",
     organization: { en: "Independent", es: "Independiente" },
@@ -71,6 +61,24 @@ export const experience = [
     evidence: [project("maderable"), project("salon"), project("faclab")],
   },
   {
+    id: "konfio",
+    organization: { en: "Konfio", es: "Konfio" },
+    context: { en: "Fintech · Mexico", es: "Fintech · México" },
+    role: {
+      en: "Senior Fullstack Engineer",
+      es: "Senior Fullstack Engineer",
+    },
+    period: { start: "2024-11", end: "present" },
+    highlights: {
+      en: ["On the Cards team, which owns the credit card experience."],
+      es: [
+        "En el equipo de Cards, responsable de la experiencia de las tarjetas de crédito.",
+      ],
+    },
+    stack: ["Python", "Flask", "PostgreSQL"],
+    evidence: [],
+  },
+  {
     id: "justo",
     organization: { en: "Jüsto", es: "Jüsto" },
     context: {
@@ -78,33 +86,37 @@ export const experience = [
       es: "E-commerce · México, remoto",
     },
     role: { en: "Software Engineer", es: "Software Engineer" },
-    period: {
-      start: "2021-10",
-      end: pending("the month Denis left Jüsto"),
-    },
+    period: { start: "2021-10", end: "2024-10" },
     problem: {
-      en: "An e-commerce platform moving from a Django system to microservices.",
-      es: "Una plataforma de e-commerce que pasaba de un sistema Django a microservicios.",
+      en: "An e-commerce platform moving from a Django monolith to microservices.",
+      es: "Una plataforma de e-commerce que pasaba de un monolito Django a microservicios.",
     },
     highlights: {
       en: [
         "Built features aimed at the site's conversion.",
         "Integrated external services to run promotional campaigns.",
-        "Took part in the migration to microservices in Python and, mostly, Node.js on AWS, with metrics and monitoring.",
+        "Took part in the migration to microservices in Python and, mostly, TypeScript on Node.js and AWS: clean architecture, DynamoDB, and messaging over SNS and SQS.",
+        "Metrics, traces and monitoring with OpenTelemetry and SigNoz.",
       ],
       es: [
         "Desarrollé funcionalidades orientadas a la conversión del sitio.",
         "Integré servicios externos para ejecutar campañas promocionales.",
-        "Participé en la migración a microservicios en Python y, sobre todo, Node.js sobre AWS, con métricas y monitoreo.",
+        "Participé en la migración a microservicios en Python y, sobre todo, TypeScript sobre Node.js y AWS: arquitectura limpia, DynamoDB y mensajería con SNS y SQS.",
+        "Métricas, trazas y monitoreo con OpenTelemetry y SigNoz.",
       ],
     },
-    stack: ["Python", "Django", "Node.js", "AWS"],
-    evidence: [],
-    unconfirmed: [
-      pending(
-        "measurable results at Jüsto (the 2024 CV mentions more engagement and sales, without figures)",
-      ),
+    stack: [
+      "Python",
+      "Django",
+      "TypeScript",
+      "Node.js",
+      "AWS",
+      "DynamoDB",
+      "SNS · SQS",
+      "OpenTelemetry",
+      "SigNoz",
     ],
+    evidence: [],
   },
   {
     id: "morona-developer",
@@ -206,7 +218,7 @@ export type EducationEntry = {
   period: DateRange;
 };
 
-/** Sources: CV (2024) and LinkedIn, which disagree on the ESPOCH dates. */
+/** Sources: CV (2024) and LinkedIn; Denis confirmed the ESPOCH dates. */
 export const education: readonly EducationEntry[] = [
   {
     id: "unir",
@@ -227,9 +239,6 @@ export const education: readonly EducationEntry[] = [
       en: "Escuela Superior Politécnica de Chimborazo (ESPOCH), Ecuador",
       es: "Escuela Superior Politécnica de Chimborazo (ESPOCH), Ecuador",
     },
-    period: {
-      start: "2008",
-      end: pending("ESPOCH graduation year (the sources say 2013 and 2015)"),
-    },
+    period: { start: "2008", end: "2015" },
   },
 ];

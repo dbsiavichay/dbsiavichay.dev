@@ -16,7 +16,7 @@ Por eso, cuando una regla importa, la pongo en el nivel más bajo que puede expr
 
 ## En la base de datos
 
-**El doble agendamiento, en la app del salón.** Revisar la agenda en Python y después escribir en ella deja una ventana: dos peticiones que leen antes de que cualquiera escriba pasan las dos. No es una carrera teórica: son dos personas confirmando el mismo horario en el mismo segundo. Un **constraint de exclusión** de PostgreSQL sobre el rango de tiempo de cada cita no tiene esa ventana. Solo participan los estados que ocupan la silla, y una marca explícita, que exige permiso, permite indicar que dos clientes pueden compartir una estación.
+**El doble agendamiento, en Grazia, la app del salón.** Revisar la agenda en Python y después escribir en ella deja una ventana: dos peticiones que leen antes de que cualquiera escriba pasan las dos. No es una carrera teórica: son dos personas confirmando el mismo horario en el mismo segundo. Un **constraint de exclusión** de PostgreSQL sobre el rango de tiempo de cada cita no tiene esa ventana. Solo participan los estados que ocupan la silla, y una marca explícita, que exige permiso, permite indicar que dos clientes pueden compartir una estación.
 
 **Motivos para el dinero que se mueve.** Un descuento sin motivo es un hueco sin explicación en la caja, así que la base de datos lo rechaza, y lo mismo pasa con un cargo extra. Un reembolso tiene que apuntar al pago que corrige, y un check constraint ata ese puntero al tipo de fila.
 
@@ -26,7 +26,7 @@ Algunas reglas se sostienen mejor con lo que el modelo de datos hace imposible d
 
 - **Los pagos son append-only.** Borrar uno se rechaza, y ninguna edición cambia su monto. Corregir dinero significa agregar un reembolso, así que la historia de la caja se puede leer, pero no reescribir.
 - **Los precios se congelan.** Una cita conserva el precio que tenían sus servicios al agendarse, y una orden de Maderable conserva un snapshot de su plano y sus precios. Un cambio de precio posterior no alcanza a ninguna de las dos.
-- **Los cambios de estado pasan por una sola puerta.** En la app del salón, una cita cambia de estado en un solo lugar, que escribe su historial y su evento de outbox en la misma transacción. No hay un segundo camino que pueda olvidar uno de los dos.
+- **Los cambios de estado pasan por una sola puerta.** En Grazia, una cita cambia de estado en un solo lugar, que escribe su historial y su evento de outbox en la misma transacción. No hay un segundo camino que pueda olvidar uno de los dos.
 
 ## En el servicio, como respaldo
 

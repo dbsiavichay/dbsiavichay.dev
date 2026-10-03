@@ -1,5 +1,3 @@
-import { pending } from "@/lib/pending";
-
 export const meta = {
   title: "Faclab",
   tagline: "Ventas, inventario y facturación electrónica para Ecuador",
@@ -7,7 +5,7 @@ export const meta = {
     "Ventas, inventario, compras y punto de venta con facturación electrónica del SRI. Es mi producto propio, y el proyecto donde la arquitectura pasó de un monolito a servicios, y en parte de vuelta.",
   relation: "own-product",
   role: "Autoría completa: producto, arquitectura y código",
-  period: { start: 2022, end: 2026 },
+  period: { start: 2022, end: "present" },
   stack: [
     "FastAPI",
     "SQLAlchemy",
@@ -24,14 +22,13 @@ export const meta = {
   ],
   tier: "standard",
   order: 2,
-  unconfirmed: [pending("Faclab: is it in production, or used by customers?")],
 };
 
-{/* Fuentes: el historial de git de los repositorios de Faclab. El uso en producción no está confirmado: no afirmar clientes. */}
+{/* Fuentes: el historial de git de los repositorios de Faclab. Está en desarrollo, sin usuarios en producción: no afirmar clientes. */}
 
 ## El producto
 
-Faclab es mi producto propio: ventas, inventario, compras y punto de venta para negocios en Ecuador, con facturación electrónica del SRI. Lo construyo solo desde 2022: producto, arquitectura y código.
+Faclab es mi producto propio: ventas, inventario, compras y punto de venta para negocios en Ecuador, con facturación electrónica del SRI. Lo construyo solo desde 2022: producto, arquitectura y código. Sigue en desarrollo: todavía ningún negocio lo usa en producción.
 
 Una factura electrónica en Ecuador no es un PDF. Es un documento XML con una clave de acceso con dígito verificador, firmado con el certificado de la empresa (XAdES-BES), enviado a los servicios SOAP del SRI para su validación, y solo es válido cuando el SRI lo autoriza. Cada paso puede fallar por su cuenta, contra un servicio que no controlo. Eso definió todo lo demás.
 

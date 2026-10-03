@@ -8,6 +8,7 @@ const routes = [
   "/es/projects/salon",
   "/en/notes/following-a-request-across-kafka",
   "/es/notes/rules-that-cant-be-bypassed",
+  "/es/colophon",
   "/en/not-a-page",
 ];
 
@@ -54,6 +55,7 @@ const layoutPaths = [
   "/en/projects/maderable",
   "/es/projects/faclab",
   "/es/notes/monolith-to-services-and-back",
+  "/en/colophon",
 ];
 
 test.describe("responsive layout", () => {

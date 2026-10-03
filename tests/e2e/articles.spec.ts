@@ -14,9 +14,10 @@ const notes = [
 const paths = [
   ...projects.map((slug) => `/projects/${slug}`),
   ...notes.map((slug) => `/notes/${slug}`),
+  "/colophon",
 ];
 
-test.describe("case studies and notes", () => {
+test.describe("case studies, notes and the colophon", () => {
   for (const locale of ["en", "es"]) {
     for (const path of paths) {
       test(`/${locale}${path} renders its article`, async ({ page }) => {
@@ -107,9 +108,10 @@ test.describe("case studies and notes", () => {
       name: "Los case studies detrás de esta nota",
     });
     await expect(sources.getByRole("link")).toHaveCount(3);
-    await expect(
-      sources.getByRole("link", { name: "Gestión de salón" }),
-    ).toHaveAttribute("href", "/es/projects/salon");
+    await expect(sources.getByRole("link", { name: "Grazia" })).toHaveAttribute(
+      "href",
+      "/es/projects/salon",
+    );
   });
 
   test("the language switch keeps the article", async ({ page }) => {
@@ -119,9 +121,12 @@ test.describe("case studies and notes", () => {
       .getByRole("link", { name: "Español" })
       .click();
     await expect(page).toHaveURL(/\/es\/projects\/salon$/);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-      "Gestión de salón",
-    );
+    await expect(page.locator("html")).toHaveAttribute("lang", "es");
+    // The product's name is the same in both languages; its tagline isn't.
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Grazia");
+    await expect(
+      page.getByText("Agenda, pagos y caja para un salón de belleza"),
+    ).toBeVisible();
   });
 
   test("unknown slugs answer 404 in the route's language", async ({ page }) => {

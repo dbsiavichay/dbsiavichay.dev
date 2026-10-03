@@ -1,5 +1,3 @@
-import { pending } from "@/lib/pending";
-
 export const meta = {
   title: "Faclab",
   tagline: "Sales, inventory and electronic invoicing for Ecuador",
@@ -7,7 +5,7 @@ export const meta = {
     "Sales, inventory, purchasing and point of sale with electronic invoicing for Ecuador's tax authority (SRI). My own product, and the project where the architecture went from a monolith to services, and partly back.",
   relation: "own-product",
   role: "Sole author: product, architecture and code",
-  period: { start: 2022, end: 2026 },
+  period: { start: 2022, end: "present" },
   stack: [
     "FastAPI",
     "SQLAlchemy",
@@ -24,14 +22,13 @@ export const meta = {
   ],
   tier: "standard",
   order: 2,
-  unconfirmed: [pending("Faclab: is it in production, or used by customers?")],
 };
 
-{/* Sources: the git history of the Faclab repositories. Production use is unconfirmed: don't claim customers. */}
+{/* Sources: the git history of the Faclab repositories. It's in development, with no users in production: don't claim customers. */}
 
 ## The product
 
-Faclab is my own product: sales, inventory, purchasing and a point of sale for businesses in Ecuador, with electronic invoicing for the tax authority, the SRI. I've built it alone since 2022 — product, architecture and code.
+Faclab is my own product: sales, inventory, purchasing and a point of sale for businesses in Ecuador, with electronic invoicing for the tax authority, the SRI. I've built it alone since 2022 — product, architecture and code. It's still in development: no business uses it in production yet.
 
 An electronic invoice in Ecuador isn't a PDF. It's an XML document with a check-digit access code, signed with the company's certificate (XAdES-BES), sent to the SRI's SOAP services for validation, and only valid once the SRI authorizes it. Each step can fail on its own, against a service I don't control. That shaped everything else.
 

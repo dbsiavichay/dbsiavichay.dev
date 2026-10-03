@@ -1,7 +1,7 @@
 import { profile } from "@/data/profile";
 import { locales, type Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/get-dictionary";
-import { getNotes, getProjects } from "@/lib/content";
+import { getNotes, getProjects, pageHref } from "@/lib/content";
 
 import type { Command } from "./commands";
 
@@ -60,6 +60,14 @@ export async function getCommands(
       keywords: [id],
       action: { type: "navigate", href: `/${locale}#${id}` },
     })),
+    {
+      id: "colophon",
+      group: "sections",
+      icon: "note",
+      label: dict.command.colophon,
+      keywords: ["colophon", "colofón", "stack", "deploy", "ci"],
+      action: { type: "navigate", href: pageHref(locale, "colophon") },
+    },
     {
       id: "locale",
       group: "actions",

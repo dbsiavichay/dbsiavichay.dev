@@ -1,9 +1,14 @@
+import type { StaticImageData } from "next/image";
+
+import portrait from "@/assets/denis-siavichay.webp";
 import type { Localized } from "@/i18n/localized";
 import { pending, type Confirmable } from "@/lib/pending";
 
 type Language = { name: Localized; level: Confirmable<Localized> };
 
-/** Who Denis is and how to reach him. Sources: CV (2024), LinkedIn. */
+type Photo = { image: StaticImageData; alt: Localized };
+
+/** Who Denis is and how to reach him. Sources: CV (2024), LinkedIn, Denis. */
 export const profile = {
   name: "Denis Siavichay",
   jobTitle: "Software Engineer",
@@ -24,11 +29,20 @@ export const profile = {
     },
     {
       name: { en: "English", es: "Inglés" },
-      level: pending(
-        "current English level (the 2024 CV says intermediate), or leave it out",
-      ),
+      level: { en: "intermediate", es: "intermedio" },
     },
   ] satisfies Language[],
-  photo: pending("a photo for the About section, or none"),
+  /**
+   * Cropped to 4:5 and encoded once, at twice the size it is shown, so the
+   * server never resizes images at runtime (D34 in PORTFOLIO_PLAN.md). The
+   * import gives its hashed URL and its dimensions.
+   */
+  photo: {
+    image: portrait,
+    alt: {
+      en: "Denis Siavichay, in a navy blazer and a white shirt, smiling at the camera.",
+      es: "Denis Siavichay, con saco azul marino y camisa blanca, sonríe a la cámara.",
+    },
+  } satisfies Photo,
   resume: pending("an updated CV in PDF to offer for download, or none"),
 };

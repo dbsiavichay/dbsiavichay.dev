@@ -1,12 +1,10 @@
-import { pending } from "@/lib/pending";
-
-{/* The salon is never named. The product name is only used once confirmed. */}
+{/* The salon is never named. The product, Grazia, can be: Denis confirmed it. */}
 
 export const meta = {
-  title: "Salon management",
+  title: "Grazia",
   tagline: "Appointments, payments and cash for a beauty salon, phone-first",
   summary:
-    "Appointments, clients, services, cash, expenses and photos for a beauty salon, designed for the phone first, with the business rules enforced where they can't be bypassed.",
+    "Appointments, clients, services, cash, expenses and photos for a beauty salon, in production and designed for the phone first, with the business rules enforced where they can't be bypassed.",
   relation: "client",
   role: "Sole engineer: product, code and operations",
   period: { start: 2026, end: 2026 },
@@ -26,16 +24,13 @@ export const meta = {
   ],
   tier: "standard",
   order: 3,
-  unconfirmed: [
-    pending("Salon: can the product name be published? Is it in production?"),
-  ],
 };
 
 ## The business
 
 A beauty salon needed one place for its whole day: appointments, clients and their history, the services and their prices, the money that comes in, the money that goes out, and before-and-after photos. The app is designed for the phone first.
 
-I built it alone in 2026: product, API, web app and the server it's built to run on. The salon isn't named here, and neither is the product, until both are confirmed for publication.
+I built it alone in 2026: product, API, web app and the server it runs on, where it's now in production. The product is Grazia; the salon itself isn't named here.
 
 ## Rules that live where nothing can skip them
 
@@ -80,7 +75,7 @@ That decision is the subject of [Deleting the architecture you didn't need](/en/
 
 ## Operations on one VPS
 
-- **A shared edge.** One Caddy, in its own Compose project, owns ports 80 and 443 and terminates TLS for every site on the server. Each project joins an external `edge` network with its own aliases and adds one file to the proxy's sites; its database never joins that network. This portfolio is planned to run behind the same edge.
+- **A shared edge.** One Caddy, in its own Compose project, owns ports 80 and 443 and terminates TLS for every site on the server. Each project joins an external `edge` network with its own aliases and adds one file to the proxy's sites; its database never joins that network. This portfolio runs behind the same edge.
 - **The server never builds.** GitHub Actions runs the tests, builds the images and publishes them to GHCR; the server only pulls. The SPA and the API share one origin.
 - **Deploys roll back.** The deploy script waits for the new container to be healthy and restores the previous image tag if it isn't. A rollback restores the image, never the schema, so migrations are written expand-then-contract and the previous image keeps working against the new schema.
 - **Backups are rehearsed.** A scheduled dump, and a restore drill that loads the newest one into a scratch database, checks it and drops it.

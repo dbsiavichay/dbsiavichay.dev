@@ -34,8 +34,8 @@ describe.each(contentKinds)("content/%s", (kind) => {
 
 /** The fields that state facts rather than prose: they can't differ by language. */
 function projectFacts(project: Project) {
-  const { relation, period, stack, tier, order, slug } = project;
-  return { relation, period, stack, tier, order, slug };
+  const { relation, period, stack, live, tier, order, slug } = project;
+  return { relation, period, stack, live: live?.href, tier, order, slug };
 }
 
 function noteFacts(note: Note) {

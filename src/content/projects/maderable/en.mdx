@@ -1,5 +1,3 @@
-import { pending } from "@/lib/pending";
-
 export const meta = {
   title: "Maderable",
   tagline: "Quoting, cut optimization and production for a board shop",
@@ -25,10 +23,11 @@ export const meta = {
     "A live quote becomes an immutable order, and a Windows agent prints its labels on the shop's printers.",
   ],
   tier: "featured",
+  live: {
+    href: "https://app.maderable.ec",
+    note: "The shop's app. Staff sign in to use it.",
+  },
   order: 1,
-  unconfirmed: [
-    pending("Maderable: can the site link to the shop's public website?"),
-  ],
 };
 
 {/* Maderable is a client: architecture yes, figures and benchmarks no. Never name the shop's customers or its existing inventory system. */}

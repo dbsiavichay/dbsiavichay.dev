@@ -30,7 +30,8 @@ export const projectTiers = ["featured", "standard", "compact"] as const;
  * `export const meta` of `src/content/projects/<slug>/<locale>.mdx`.
  *
  * Text fields are written per language; `relation`, `period`, `stack`,
- * `tier` and `order` are facts and must match across languages (tested).
+ * `live.href`, `tier` and `order` are facts and must match across languages
+ * (tested).
  */
 export const projectMetaSchema = z
   .object({
@@ -47,6 +48,15 @@ export const projectMetaSchema = z
     period: periodSchema,
     stack: z.array(text).min(1),
     highlights: z.array(text).max(4).default([]),
+    /** Where the system runs, when it may be linked. */
+    live: z
+      .object({
+        href: z.url({ protocol: /^https$/ }),
+        /** What a visitor finds there, in a few words. */
+        note: text,
+      })
+      .strict()
+      .optional(),
     tier: z.enum(projectTiers),
     order: z.number().int(),
     /** Facts about the project still waiting for confirmation. */
@@ -73,3 +83,14 @@ export const noteMetaSchema = z
   .strict();
 
 export type NoteMeta = z.infer<typeof noteMetaSchema>;
+
+/** `export const meta` of `src/content/pages/<slug>/<locale>.mdx`. */
+export const pageMetaSchema = z
+  .object({
+    title: text,
+    /** What the page is about, in a sentence or two. */
+    summary: text,
+  })
+  .strict();
+
+export type PageMeta = z.infer<typeof pageMetaSchema>;

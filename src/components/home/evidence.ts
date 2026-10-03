@@ -1,7 +1,7 @@
 import type { Evidence } from "@/data/evidence";
 import { experience } from "@/data/experience";
 import type { Locale } from "@/i18n/config";
-import type { Project } from "@/lib/content";
+import { pageHref, type Project } from "@/lib/content";
 import { isPending } from "@/lib/pending";
 
 export type EvidenceContext = {
@@ -40,6 +40,10 @@ export function resolveEvidence(
       };
     }
     case "site":
-      return { key: "site", label: thisSite };
+      return {
+        key: "site",
+        label: thisSite,
+        href: pageHref(locale, "colophon"),
+      };
   }
 }
