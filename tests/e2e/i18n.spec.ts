@@ -23,6 +23,14 @@ test.describe("language routing", () => {
     expect(response.headers().location).toMatch(/\/es$/);
   });
 
+  test("the health check is not redirected to a locale", async ({
+    request,
+  }) => {
+    const response = await request.get("/healthz", { maxRedirects: 0 });
+    expect(response.status()).toBe(200);
+    expect(await response.json()).toMatchObject({ status: "ok" });
+  });
+
   test("each locale sets the document language", async ({ page }) => {
     await page.goto("/en");
     await expect(page.locator("html")).toHaveAttribute("lang", "en");

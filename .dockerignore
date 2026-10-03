@@ -1,0 +1,23 @@
+# Only what `next build` reads goes into the build context. Local builds,
+# reports and env files must never leak into an image built on this machine.
+.git
+.github
+node_modules
+.next
+out
+coverage
+playwright-report
+test-results
+.lighthouseci
+*.tsbuildinfo
+next-env.d.ts
+.env*
+.DS_Store
+
+# Not read by the build.
+deploy
+tests
+scripts
+*.md
+Dockerfile
+.dockerignore

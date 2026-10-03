@@ -1,0 +1,41 @@
+# The portfolio's production stack. Deployed to /opt/portfolio on the VPS that
+# runs the shared edge proxy (/opt/edge, owned by grazia-infra).
+#
+# No port is published: the edge reaches the server over the external `edge`
+# network as `portfolio-web:3000`. The only value that changes per deploy is
+# WEB_TAG, which scripts/deploy.sh writes to /opt/portfolio/.env.
+
+name: portfolio
+
+services:
+  web:
+    image: ghcr.io/dbsiavichay/dbsiavichay.dev:${WEB_TAG:-latest}
+    restart: unless-stopped
+    # Forwards SIGTERM and reaps children; Node as PID 1 does neither, and every
+    # deploy would wait out Docker's 10 s stop timeout.
+    init: true
+    # The site has no state. Next writes only to its cache, which gets a tmpfs
+    # owned by the image's `node` user (uid 1000).
+    read_only: true
+    tmpfs:
+      - /app/.next/cache:uid=1000,gid=1000,mode=0700,size=64m
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      edge:
+        aliases: [portfolio-web]
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+networks:
+  edge:
+    name: edge
+    external: true

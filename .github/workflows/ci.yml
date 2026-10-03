@@ -1,0 +1,257 @@
+name: ci
+
+# Every pull request runs the checks. A push to master runs them again and, if
+# all pass, publishes the image the `docker` job rehearsed and deploys it. The
+# VPS never builds and holds no git credentials: it only pulls from GHCR.
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+
+# A newer push to a pull request supersedes the running checks. On master
+# nothing is cancelled: a deploy cut halfway could leave the server's .env
+# naming a tag that never went healthy.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  IMAGE: ghcr.io/dbsiavichay/dbsiavichay.dev
+  SITE_URL: https://dbsiavichay.dev
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test
+      # Never fails: pending facts are hidden in production. The annotations
+      # keep them visible on every run until each one is confirmed.
+      - name: Pending facts
+        run: npm run content:pending -- --github
+
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 7
+
+  lighthouse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm run lhci
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: lighthouse
+          path: .lighthouseci
+          retention-days: 7
+
+  # The image that gets published, built once and run the way the VPS runs it:
+  # deploy/compose.yml, hardened, behind a Caddy loading portfolio.caddy.
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - name: Build time
+        id: meta
+        run: echo "time=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          load: true
+          tags: dbsiavichay-dev:smoke
+          build-args: |
+            SITE_URL=${{ env.SITE_URL }}
+            BUILD_SHA=${{ github.sha }}
+            BUILD_TIME=${{ steps.meta.outputs.time }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Rehearse the production topology
+        env:
+          EXPECT_SHA: ${{ github.sha }}
+        run: |
+          deploy/smoke/smoke.sh up
+          deploy/smoke/smoke.sh check
+      - name: Tear down
+        if: always()
+        run: deploy/smoke/smoke.sh down
+      - name: Save the image for publishing
+        if: github.event_name == 'push'
+        run: docker save dbsiavichay-dev:smoke | gzip > image.tar.gz
+      - uses: actions/upload-artifact@v7
+        if: github.event_name == 'push'
+        with:
+          name: image
+          path: image.tar.gz
+          retention-days: 1
+          compression-level: 0
+
+  # Catches what would otherwise fail on the VPS halfway through a deploy: a
+  # script with a quoting bug, a compose file that does not render, a site file
+  # the edge's Caddy would reject.
+  deploy-config:
+    name: deploy config
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - name: shellcheck
+        run: shellcheck deploy/scripts/*.sh deploy/smoke/*.sh
+      - name: Render the compose files
+        run: |
+          docker compose -f deploy/compose.yml config -q
+          docker compose -f deploy/compose.yml -f deploy/smoke/compose.yml config -q
+      # The same image and layout as the edge, so `import security` and
+      # `import /etc/caddy/sites/*.caddy` resolve as they do on the VPS.
+      - name: Validate portfolio.caddy
+        run: |
+          docker run --rm \
+            -v "$PWD/deploy/smoke/Caddyfile:/etc/caddy/Caddyfile:ro" \
+            -v "$PWD/deploy/caddy:/etc/caddy/sites:ro" \
+            caddy:2-alpine caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+      # Caddy warns about formatting on every reload. Keep the edge's logs clean.
+      - name: Check Caddyfile formatting
+        run: |
+          docker run --rm -v "$PWD/deploy:/deploy:ro" caddy:2-alpine sh -c '
+            for f in /deploy/caddy/*.caddy /deploy/smoke/Caddyfile; do
+              caddy fmt "$f" | diff -u "$f" - || exit 1
+            done'
+
+  publish:
+    if: github.event_name == 'push'
+    needs: [quality, e2e, lighthouse, docker, deploy-config]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      tag: ${{ steps.push.outputs.tag }}
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: image
+      - name: Load the rehearsed image
+        run: gunzip -c image.tar.gz | docker load
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push sha-<7> and latest
+        id: push
+        run: |
+          tag="sha-${GITHUB_SHA::7}"
+          for t in "$tag" latest; do
+            docker tag dbsiavichay-dev:smoke "${IMAGE}:${t}"
+            docker push "${IMAGE}:${t}"
+          done
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "Published \`${IMAGE}:${tag}\`" >> "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    needs: publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: production
+      url: ${{ env.SITE_URL }}
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    env:
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_SSH_PORT: ${{ secrets.VPS_SSH_PORT }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Configure SSH
+        env:
+          SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          # Fail here, by name, rather than later as an opaque "Host key
+          # verification failed" when keyscan got nothing.
+          ssh-keyscan -p "$VPS_SSH_PORT" -H "$VPS_HOST" > /tmp/host_keys 2>/dev/null || true
+          if [ ! -s /tmp/host_keys ]; then
+            echo "ssh-keyscan got no host key from ${VPS_HOST}:${VPS_SSH_PORT}." >&2
+            exit 1
+          fi
+          cat /tmp/host_keys >> ~/.ssh/known_hosts
+          printf '%s\n' "Host vps" "  HostName ${VPS_HOST}" "  Port ${VPS_SSH_PORT}" \
+            "  User ${VPS_USER}" "  IdentityFile ~/.ssh/deploy_key" "  BatchMode yes" \
+            "  StrictHostKeyChecking yes" "  ServerAliveInterval 30" > ~/.ssh/config
+
+      # tar, not scp, so the scripts keep their exec bits. Extracting never
+      # deletes, so the server's .env survives.
+      - name: Ship the deploy files
+        run: |
+          tar -czf - -C deploy compose.yml scripts caddy \
+            | ssh vps 'test -d /opt/portfolio || { echo "/opt/portfolio does not exist. See deploy/README.md." >&2; exit 1; }; tar -xzf - -C /opt/portfolio'
+
+      # The container first: the edge starts routing to it only once it is
+      # healthy, and a failed deploy never touches the edge.
+      - name: Deploy
+        env:
+          TAG: ${{ needs.publish.outputs.tag }}
+        run: |
+          # The tag expands here, on the runner, on purpose: publish derived it
+          # from the commit SHA, and deploy.sh validates it again.
+          # shellcheck disable=SC2029
+          ssh vps "/opt/portfolio/scripts/deploy.sh ${TAG} && /opt/portfolio/scripts/apply-edge.sh"
+
+      # Through DNS, TLS and the edge, the way a visitor arrives. The first
+      # deploy may wait a few seconds for its certificate.
+      - name: Check the live site
+        run: |
+          for _ in $(seq 1 30); do
+            if curl -fsS "${SITE_URL}/healthz" | grep -qF "\"sha\":\"${GITHUB_SHA}\""; then
+              echo "${SITE_URL} serves ${GITHUB_SHA::7}."
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "${SITE_URL}/healthz does not report ${GITHUB_SHA}." >&2
+          exit 1
