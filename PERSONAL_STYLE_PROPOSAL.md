@@ -2,7 +2,7 @@
 
 Propuesta de la segunda etapa de diseño del portfolio de **Denis Siavichay**: darle una identidad personal sin reconstruirlo. Parte del sitio que ya está en producción (fases 1–8 de `PORTFOLIO_PLAN.md`) y no cambia su arquitectura técnica.
 
-> **Estado:** Denis eligió la recomendación de la sección 5 (2026-10-03). Las fases 10 (fundamentos), 11 (navbar, hero y terminal) y 12 (proyectos, case studies, experiencia y About) están implementadas; siguen las fases 13–14 (sección 6).
+> **Estado:** Denis eligió la recomendación de la sección 5 (2026-10-03). Las fases 10 a 14 están implementadas y la revisión final (sección 8) está respondida: la etapa está cerrada.
 
 **Principio:** _A software engineer's digital workspace._ Quien visita el sitio entra en el espacio de trabajo digital de un ingeniero. La estética del setup (terminal, Vim, teclado mecánico, escritorio, luz cálida) es parte de su personalidad, pero el centro de la página sigue siendo **su trabajo, su ingeniería y los sistemas que construye**.
 
@@ -544,3 +544,20 @@ Concepto del asset generado (aprobado e implementado en la fase 12):
 | ¿La accesibilidad se mantiene?                               | axe sin violaciones, foco visible, reduced motion, WCAG 2.1.4 y 2.2.2, contraste por script.                            |
 
 Si alguna respuesta es "no", la fase 14 no se cierra hasta corregirla.
+
+### 8.1 Respuestas (2026-10-03, cierre de la fase 14)
+
+Todas las respuestas son "sí". Las capturas de comparación son de la fase 8 (`fc2cafe`, antes de esta etapa) contra la rama de las fases 13–14, a 1440 px, sección por sección; la revisión de mobile usa 320, 390 (Pixel 7), 768, 1024, 1920 y un iPad horizontal.
+
+1. **¿Se reconoce que es el portfolio de un Software Engineer?** Sí. El H1, la bajada y los CTAs no cambiaron y siguen siendo lo primero que se lee. La terminal está al lado desde `lg` y debajo en mobile, nunca encima.
+2. **¿Tiene una identidad visual propia?** Sí. La terminal muestra el build real; el teclado está dibujado con el lenguaje del plano de corte (hairlines, cotas, Esc en ámbar); los keycaps del monograma, de ⌘K, de la ayuda y del footer se hunden al pulsarlos; la mono escribe rutas, comandos y teclas.
+3. **¿Se siente diferente de una plantilla?** Sí. Contra la fase 8: el hero pasó de una tarjeta genérica a una ventana de terminal con salida tipo neofetch y la luz de la lámpara; capacidades dejó cuatro cajas por columnas con hairline; las tarjetas tienen la ruta `~/projects/<slug>` y el stack en una línea; `01 —— EYEBROW` es `01 / EYEBROW`; la experiencia es un riel `git log --graph`; los case studies numeran sus h2 y siguen la sección con cursorline y `NORMAL 03/08`; About tiene la figura del workspace; la 404 responde como una shell. Los siete problemas de la sección 2 tienen una respuesta visible.
+4. **¿La estética del setup está integrada naturalmente?** Sí. Cada elemento es verdadero o útil: la terminal lee el build; las rutas son las del contenido en el repositorio; `pip install` instala el paquete; el riel marca qué empleo sigue vigente; el teclado es el K2 de Denis; los atajos funcionan; la frase de Vim dice lo que Denis confirmó (lo usa de forma ocasional y le gusta).
+5. **¿La terminal aporta algo?** Sí. Es el panel "This build": commit, fecha, toolchain y fuente salen del build, y un test e2e los fija. Sin ella se pierde esa información y el acceso al colophon. La 404 la usa para la respuesta de la shell, con la ruta que se pidió.
+6. **¿Vim aporta personalidad sin ser gimmick?** Sí. Los atajos se pueden apagar (WCAG 2.1.4), están documentados en `?` y en el colophon, nunca se disparan al escribir, y nada se alcanza solo con ellos. El modo comando funciona (`:projects`, `:lang`…) y responde E492 como Vim. Los easter eggs (`sudo hire denis`, `:q`) solo aparecen a quien los escribe.
+7. **¿El teclado mecánico aporta identidad sin dominar el diseño?** Sí. Aparece en keycaps pequeños y en una figura de About, sin logo ni marca; nunca en el hero.
+8. **¿Los proyectos siguen siendo protagonistas?** Sí. El orden de la home no cambió (el e2e fija los h2 de `main section[id]`), `#work` tiene sus 4 `article` y la tarjeta de Maderable conserva el plano de corte.
+9. **¿La experiencia sigue siendo profesional?** Sí. El copy no cambió, salvo la frase del workspace en About, aprobada por Denis (sección 7). Los easter eggs no se anuncian y el saludo vive en la consola.
+10. **¿Funciona perfectamente en mobile?** Sí. Los tests sin overflow pasan en los 8 anchos, de 320 a 1920 px. En las capturas: la terminal va sin logo ni glow en mobile; las pistas de teclado y el botón de la ayuda no se muestran en pantallas táctiles (`hover: none`); el dibujo del teclado pierde los rótulos bajo `sm`; la status line del TOC solo existe desde `lg`; una ruta larga en la 404 se corta sin desbordar.
+11. **¿La página sigue siendo rápida?** Sí. Lighthouse CI con perfil de teléfono, tres corridas por URL: performance de 96 a 99, y 100 en accesibilidad, buenas prácticas y SEO. JS en la home: 145,4 de 150 KiB (144,2 al cerrar la fase 12; los atajos sumaron 1,2 KiB a la isla de ⌘K). Case study: 156,3 de 165 KiB. Fuentes: 62,9 de 70 KiB.
+12. **¿La accesibilidad se mantiene?** Sí. axe no encuentra violaciones en las ocho rutas del test, en desktop y mobile, ni con ⌘K o la ayuda abiertos. El foco es visible, `j`/`k` respetan el movimiento reducido, el cursor parpadea cinco veces (WCAG 2.2.2), los atajos se pueden apagar (WCAG 2.1.4) y el contraste de los tokens lo verifica un test.

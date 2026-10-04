@@ -46,6 +46,31 @@ test.describe("header", () => {
     await expect(page.getByRole("button", { name: "Open menu" })).toBeHidden();
   });
 
+  test("a link to where the address already points still goes there", async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name === "mobile");
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/en#work");
+    await page.evaluate(() => scrollTo(0, document.body.scrollHeight));
+    const nav = page.getByRole("navigation", { name: "Primary" });
+    await nav.getByRole("link", { name: "Work" }).click();
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          Math.round(
+            document.getElementById("work")!.getBoundingClientRect().top,
+          ),
+        ),
+      )
+      .toBe(80);
+
+    await page.goto("/en");
+    await page.evaluate(() => scrollTo(0, document.body.scrollHeight));
+    await page.getByRole("link", { name: "Denis Siavichay, home" }).click();
+    await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+  });
+
   test("mobile opens the menu, and Escape closes it", async ({
     page,
   }, testInfo) => {

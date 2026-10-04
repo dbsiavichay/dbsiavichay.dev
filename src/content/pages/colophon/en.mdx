@@ -23,11 +23,12 @@ The rule for the content is the rule for the code: a fact is written once, and a
 
 ## Interactive only where it pays
 
-Pages are React Server Components and arrive as HTML. JavaScript goes only where something answers the reader: the menu, the language switch, the ⌘K search, copying the email, and the figures inside the case studies.
+Pages are React Server Components and arrive as HTML. JavaScript goes only where something answers the reader: the menu, the language switch, the ⌘K search and its keyboard shortcuts, copying the email, and the figures inside the case studies.
 
 - **The cut plan is a guillotine tree.** The cut plan in the Maderable case study is one a saw could actually cut, because it isn't drawn from coordinates. It's described as a tree of guillotine cuts and its geometry is derived at build time. The tests reject a plan where pieces overlap, the grain rotates or a cut crosses a piece; the browser only receives the result.
 - **React Flow loads when you ask for it.** Two architecture diagrams can be explored with pan and zoom. Until someone presses _Explore_, each one is an SVG generated from the same data and the same connector routing, so both modes draw exactly the same thing, and the interactive library isn't downloaded at all. An end-to-end test checks that it isn't.
 - **Search without a library.** ⌘K is a native `<dialog>` with the combobox and listbox pattern. The browser already handles the top layer, the focus trap and Escape, and the dialog's code loads the first time it opens.
+- **Keys, if you want them.** As in Vim, `/` searches, `:` opens the search in command mode (`:projects`, `:lang`…), `g` and a letter go to a part of the home page, and `j` and `k` move between sections. They never fire while you type, with a modifier held or under a dialog, and nothing is reachable only through them. `?` lists them with a switch that turns them off, which the browser remembers. They live in the search's code, and the help loads the first time it's opened.
 - **Motion in CSS.** Entrances are keyframes and scroll effects are scroll-driven animations, with no JavaScript, and both respect reduced motion. Scrolling only ever moves content, never fades it, so text doesn't dip below its contrast ratio halfway through an animation.
 
 ## Budgets instead of good intentions

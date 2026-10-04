@@ -77,6 +77,14 @@ export async function getCommands(
       action: { type: "locale", locale: other },
     },
     {
+      id: "shortcuts",
+      group: "actions",
+      icon: "keyboard",
+      label: dict.command.shortcuts,
+      keywords: ["vim", "keys", "help", "atajos", "teclado", "ayuda"],
+      action: { type: "help" },
+    },
+    {
       id: "copy-email",
       group: "actions",
       icon: "copy",

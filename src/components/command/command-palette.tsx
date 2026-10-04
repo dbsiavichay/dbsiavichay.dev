@@ -7,8 +7,10 @@ import {
   FileText,
   FolderOpen,
   Hash,
+  Keyboard,
   Languages,
   Search,
+  X,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -25,10 +27,12 @@ import { GitHubIcon, LinkedInIcon } from "@/components/icons/brand-icons";
 import type { Dictionary } from "@/i18n/get-dictionary";
 import { localizedPath } from "@/i18n/paths";
 import { rememberLocale } from "@/i18n/remember-locale";
+import { scrollIfCurrent } from "@/lib/same-page";
 
 import {
-  filterCommands,
+  commandWord,
   groupResults,
+  runQuery,
   type Command,
   type CommandIcon,
 } from "./commands";
@@ -39,6 +43,8 @@ const icons: Record<CommandIcon, ReactNode> = {
   note: <FileText />,
   language: <Languages />,
   copy: <Copy />,
+  keyboard: <Keyboard />,
+  close: <X />,
   github: <GitHubIcon />,
   linkedin: <LinkedInIcon />,
   source: <Code />,
@@ -46,7 +52,10 @@ const icons: Record<CommandIcon, ReactNode> = {
 
 export type CommandPaletteProps = {
   open: boolean;
+  /** What the search starts with when it opens: ":" for command mode. */
+  start: string;
   onClose: () => void;
+  onHelp: () => void;
   /** Called after an action that has no page change to show for itself. */
   onDone: (message: string) => void;
   commands: Command[];
@@ -58,11 +67,13 @@ export type CommandPaletteProps = {
  * The ⌘K menu: a modal dialog with a combobox. Typing filters, the arrow
  * keys move through the results, Enter runs one and Escape closes. Focus
  * stays in the input; the active option is announced through
- * `aria-activedescendant`.
+ * `aria-activedescendant`. A query that starts with `:` is command mode.
  */
 export default function CommandPalette({
   open,
+  start,
   onClose,
+  onHelp,
   onDone,
   commands,
   labels,
@@ -72,15 +83,22 @@ export default function CommandPalette({
   const input = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
+  const [shown, setShown] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const id = useId();
   const listId = `${id}-list`;
   const optionId = (command: Command) => `${id}-${command.id}`;
 
+  // Each time it opens, the search starts from `start`.
+  if (open !== shown) {
+    setShown(open);
+    if (open) setQuery(start);
+  }
+
   const groups = useMemo(
-    () => groupResults(filterCommands(commands, query)),
-    [commands, query],
+    () => groupResults(runQuery(commands, query, labels)),
+    [commands, query, labels],
   );
   const ordered = groups.flatMap((group) =>
     group.items.map((item) => item.command),
@@ -105,7 +123,11 @@ export default function CommandPalette({
     }
   }, [activeId]);
 
-  const empty = labels.empty.replace("{query}", query.trim());
+  const word = commandWord(query);
+  const empty =
+    word === undefined
+      ? labels.empty.replace("{query}", query.trim())
+      : labels.notCommand.replace("{command}", word);
 
   function close() {
     setQuery("");
@@ -118,7 +140,7 @@ export default function CommandPalette({
     close();
     switch (action.type) {
       case "navigate":
-        router.push(action.href);
+        if (!scrollIfCurrent(action.href)) router.push(action.href);
         break;
       case "external":
         window.open(action.href, "_blank", "noopener,noreferrer");
@@ -134,6 +156,12 @@ export default function CommandPalette({
       case "locale":
         rememberLocale(action.locale);
         router.push(localizedPath(pathname ?? "/", action.locale));
+        break;
+      case "help":
+        onHelp();
+        break;
+      case "quit":
+        onDone(labels.quitDone);
         break;
     }
   }
@@ -186,7 +214,10 @@ export default function CommandPalette({
               setActive(0);
             }}
             onKeyDown={onKeyDown}
-            className="h-14 min-w-0 flex-1 bg-transparent text-base text-fg outline-none placeholder:text-fg-subtle"
+            className={`h-14 min-w-0 flex-1 bg-transparent text-base text-fg outline-none placeholder:text-fg-subtle ${
+              // Command mode reads like Vim's command line.
+              word === undefined ? "" : "font-mono"
+            }`}
           />
         </div>
 
@@ -227,7 +258,13 @@ export default function CommandPalette({
                       {icons[command.icon]}
                     </span>
                     <span className="min-w-0 flex-1 truncate">
-                      <span className="text-fg">{command.label}</span>
+                      <span
+                        className={
+                          group === "commands" ? "font-mono text-fg" : "text-fg"
+                        }
+                      >
+                        {command.label}
+                      </span>
                       {command.hint ? (
                         <span className="ml-2 text-fg-subtle">
                           {command.hint}
@@ -245,16 +282,26 @@ export default function CommandPalette({
               </div>
             ))}
           </div>
-        ) : (
+        ) : word === undefined ? (
           <p className="px-4 py-10 text-center text-sm text-fg-muted">
             {empty}
           </p>
+        ) : (
+          // Vim's error line, and the way out of it.
+          <div className="px-4 py-8 font-mono text-sm">
+            <p className="text-signal-error">{empty}</p>
+            <p className="mt-2 text-fg-muted">{labels.notCommandHint}</p>
+          </div>
         )}
         <p role="status" className="sr-only">
-          {ordered.length > 0 ? "" : empty}
+          {ordered.length > 0
+            ? ""
+            : word === undefined
+              ? empty
+              : `${empty} ${labels.notCommandHint}`}
         </p>
 
-        <div className="flex gap-5 border-t border-line px-4 py-2.5 font-mono text-xs text-fg-subtle max-sm:hidden">
+        <div className="flex gap-5 border-t border-line px-4 py-2.5 font-mono text-xs text-fg-subtle max-sm:hidden [@media(hover:none)]:hidden">
           <span>
             <span aria-hidden="true">↑↓</span> {labels.hints.navigate}
           </span>

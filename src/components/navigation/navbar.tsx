@@ -3,6 +3,7 @@ import Link from "next/link";
 import { CommandMenu } from "@/components/command/command-menu";
 import { getCommands } from "@/components/command/get-commands";
 import { Container } from "@/components/ui/container";
+import { profile } from "@/data/profile";
 import { getI18n } from "@/i18n/server";
 
 import { LocaleSwitch } from "./locale-switch";
@@ -10,8 +11,9 @@ import { MobileMenu } from "./mobile-menu";
 import { getNavItems } from "./nav-items";
 
 /**
- * Sticky site header. Server-rendered; only the search, the menu toggle and
- * the language switch hydrate.
+ * Sticky site header. Server-rendered; only the search (which also listens
+ * for the keyboard shortcuts), the menu toggle and the language switch
+ * hydrate.
  */
 export async function Navbar() {
   const { locale, dict } = await getI18n();
@@ -58,8 +60,16 @@ export async function Navbar() {
 
         <div className="flex items-center gap-2">
           <CommandMenu
+            locale={locale}
             commands={commands}
             labels={dict.command}
+            shortcuts={{
+              ...dict.shortcuts,
+              greeting: dict.shortcuts.greeting.replace(
+                "{repo}",
+                profile.repository,
+              ),
+            }}
             copiedLabel={dict.contact.copied}
           />
           <LocaleSwitch current={locale} label={dict.a11y.languageSwitcher} />
