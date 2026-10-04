@@ -64,6 +64,10 @@ test.describe("not found", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
       "Esta página no existe.",
     );
+    // The shell's answer, above the copy, with the path that was asked for.
+    await expect(
+      page.getByText("cd: no such file or directory: /es/no-existe"),
+    ).toBeVisible();
     await expect(
       page.getByRole("link", { name: "Volver al inicio" }),
     ).toHaveAttribute("href", "/es");

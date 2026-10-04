@@ -23,11 +23,12 @@ La regla del contenido es la regla del código: un dato se escribe una vez, y un
 
 ## Interactivo solo donde aporta
 
-Las páginas son React Server Components y llegan como HTML. El JavaScript va solo donde algo responde a quien lee: el menú, el selector de idioma, la búsqueda con ⌘K, copiar el email y las figuras dentro de los case studies.
+Las páginas son React Server Components y llegan como HTML. El JavaScript va solo donde algo responde a quien lee: el menú, el selector de idioma, la búsqueda con ⌘K y sus atajos de teclado, copiar el email y las figuras dentro de los case studies.
 
 - **El plano de corte es un árbol de guillotina.** El plano de corte del case study de Maderable es uno que una sierra podría cortar de verdad, porque no se dibuja con coordenadas. Se describe como un árbol de cortes de guillotina y su geometría se deriva en el build. Los tests rechazan un plano con piezas que se solapan, una veta que rota o un corte que atraviesa una pieza; el navegador solo recibe el resultado.
 - **React Flow se carga cuando lo pides.** Dos diagramas de arquitectura se pueden explorar moviendo y ampliando. Hasta que alguien presiona _Explorar_, cada uno es un SVG generado con los mismos datos y el mismo enrutado de conectores, así que ambos modos dibujan exactamente lo mismo, y la librería interactiva ni siquiera se descarga. Un test end-to-end verifica que no se descargue.
 - **Búsqueda sin librería.** ⌘K es un `<dialog>` nativo con el patrón combobox y listbox. El navegador ya resuelve el top layer, el foco atrapado y Escape, y el código del diálogo se carga la primera vez que se abre.
+- **Atajos, si los quieres.** Como en Vim, `/` busca, `:` abre la búsqueda en modo comando (`:projects`, `:lang`…), `g` y una letra llevan a una parte de la home, y `j` y `k` pasan de una sección a otra. Nunca se disparan mientras escribes, con una tecla modificadora o con un diálogo abierto, y nada se alcanza solo con ellos. `?` los lista con un interruptor que los apaga y que el navegador recuerda. Viven en el código de la búsqueda, y la ayuda se carga la primera vez que se abre.
 - **Movimiento en CSS.** Las entradas son keyframes y los efectos al hacer scroll son scroll-driven animations, sin JavaScript, y ambos respetan el movimiento reducido. Al hacer scroll el contenido solo se desplaza, nunca se desvanece, así que el texto no baja de su contraste a mitad de una animación.
 
 ## Presupuestos en vez de buenas intenciones

@@ -131,7 +131,7 @@ export const en = {
     },
     workspace: {
       title: "Workspace",
-      lede: "Away from the work itself: mechanical keyboards.",
+      lede: "Away from the work itself: mechanical keyboards. Vim keys work on this site because I like them, not because I live in Vim.",
       keyboard: "Keyboard",
       layout: "Layout",
       switches: "Switches",
@@ -152,6 +152,7 @@ export const en = {
     builtWith: "Built with Next.js and prerendered.",
     colophon: "How it's built",
     backToTop: "Back to top",
+    shortcuts: "Keyboard shortcuts",
   },
   article: {
     breadcrumb: "Breadcrumb",
@@ -184,6 +185,7 @@ export const en = {
     results: "Results",
     empty: "Nothing matches “{query}”.",
     groups: {
+      commands: "Commands",
       sections: "Sections",
       projects: "Case studies",
       notes: "Engineering notes",
@@ -195,7 +197,40 @@ export const en = {
     linkedin: "LinkedIn",
     source: "Source code of this site",
     colophon: "How this site is built",
+    shortcuts: "Keyboard shortcuts",
+    quit: "Close this menu",
+    quitDone: "Closed. This one you can quit.",
+    sudo: "Permission granted. Let's talk.",
+    notCommand: "E492: Not an editor command: {command}",
+    notCommandHint: "Type :help for the list.",
     hints: { navigate: "navigate", open: "open", close: "close" },
+  },
+  shortcuts: {
+    title: "Keyboard shortcuts",
+    intro:
+      "Vim-style keys, because I like them. Turn them off if they get in the way.",
+    toggle: "Use these shortcuts",
+    always: "{search} and Esc work either way.",
+    close: "Close",
+    groups: { anywhere: "Anywhere", go: "Go to", page: "On the page" },
+    keys: {
+      search: "Search",
+      command: "Command mode, in the search",
+      help: "This help",
+      close: "Close a dialog",
+      next: "Next section",
+      previous: "Previous section",
+    },
+    go: {
+      home: "Home",
+      work: "Selected work",
+      notes: "Engineering notes",
+      experience: "Experience",
+      about: "About",
+      contact: "Contact",
+    },
+    greeting:
+      "Hi, I'm Denis. This site's source is public: {repo}\nPress ? on any page for the keyboard shortcuts.",
   },
   cutPlan: {
     title: "Cut plan",

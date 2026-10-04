@@ -50,3 +50,14 @@ export function LocaleSwitch({ current, label }: LocaleSwitchProps) {
     </div>
   );
 }
+
+/**
+ * The path of the page, as a shell would echo it, for the 404: it can't
+ * receive the URL it answers, and it renders on request, so the server
+ * already writes the right path. It lives here because the 404 is part of
+ * every page's layout: a client module of its own would be one more request
+ * on every page, and this one already loads with the header.
+ */
+export function CurrentPath() {
+  return usePathname();
+}

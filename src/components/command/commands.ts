@@ -5,9 +5,12 @@ export type CommandAction =
   | { type: "navigate"; href: string }
   | { type: "external"; href: string }
   | { type: "copy"; text: string }
-  | { type: "locale"; locale: Locale };
+  | { type: "locale"; locale: Locale }
+  | { type: "help" }
+  | { type: "quit" };
 
 export const commandGroups = [
+  "commands",
   "projects",
   "notes",
   "sections",
@@ -22,6 +25,8 @@ export type CommandIcon =
   | "note"
   | "language"
   | "copy"
+  | "keyboard"
+  | "close"
   | "github"
   | "linkedin"
   | "source";
@@ -95,4 +100,97 @@ export function groupResults(results: Command[]) {
     group,
     items: items.map((item) => ({ ...item, index: index++ })),
   }));
+}
+
+/**
+ * Command mode, as in Vim: `:` and a name runs the command that name points
+ * to. Hidden names don't show in the list; they answer only when typed whole.
+ */
+const exCommands: [name: string, target: string, hidden?: true][] = [
+  ["help", "shortcuts"],
+  ["projects", "section-work"],
+  ["work", "section-work", true],
+  ["notes", "section-notes"],
+  ["experience", "section-experience"],
+  ["about", "section-about"],
+  ["contact", "section-contact"],
+  ["colophon", "colophon"],
+  ["lang", "locale"],
+  ["q", "quit", true],
+  ["q!", "quit", true],
+  ["wq", "quit", true],
+];
+
+/** The names command mode lists, for the help. */
+export const exNames = exCommands
+  .filter(([, , hidden]) => !hidden)
+  .map(([name]) => `:${name}`);
+
+/** What follows the `:` of a query in command mode; undefined for a search. */
+export function commandWord(query: string): string | undefined {
+  return /^\s*:(.*)$/.exec(query)?.[1]?.trim();
+}
+
+type QueryLabels = { quit: string; sudo: string };
+
+/**
+ * What the menu shows for a query. In command mode, the commands whose name
+ * starts with the word, or the one it names exactly; `sudo hire denis` gets
+ * its answer; anything else is a search.
+ */
+export function runQuery(
+  commands: Command[],
+  query: string,
+  labels: QueryLabels,
+): Command[] {
+  const byId = new Map(commands.map((command) => [command.id, command]));
+  byId.set("quit", {
+    id: "quit",
+    group: "commands",
+    icon: "close",
+    label: labels.quit,
+    action: { type: "quit" },
+  });
+
+  const word = commandWord(query);
+  if (word !== undefined) {
+    const exact = exCommands.filter(([name]) => name === word);
+    const matches = exact.length
+      ? exact
+      : exCommands.filter(
+          ([name, , hidden]) => !hidden && name.startsWith(word),
+        );
+    return matches.flatMap(([name, id]) => {
+      const target = byId.get(id);
+      return target
+        ? [
+            {
+              ...target,
+              id: `ex-${name}`,
+              group: "commands" as const,
+              label: `:${name}`,
+              hint: target.label,
+              keywords: undefined,
+            },
+          ]
+        : [];
+    });
+  }
+
+  const contact = byId.get("section-contact");
+  if (
+    contact &&
+    normalize(query).trim().split(/\s+/).join(" ") === "sudo hire denis"
+  ) {
+    return [
+      {
+        ...contact,
+        id: "sudo",
+        group: "actions",
+        label: labels.sudo,
+        hint: contact.label,
+      },
+    ];
+  }
+  return filterCommands(commands, query);
 }

@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  commandWord,
+  exNames,
   filterCommands,
   groupResults,
   normalize,
+  runQuery,
   type Command,
 } from "@/components/command/commands";
 
@@ -85,5 +88,88 @@ describe("groupResults", () => {
       ["salon", 1],
       ["maderable", 2],
     ]);
+  });
+});
+
+describe("command mode", () => {
+  const site: Command[] = [
+    ...["work", "notes", "experience", "about", "contact"].map((id) =>
+      command(`section-${id}`, "sections", id[0]!.toUpperCase() + id.slice(1)),
+    ),
+    command("colophon", "sections", "How this site is built"),
+    command("locale", "actions", "Leer en español", {
+      action: { type: "locale", locale: "es" },
+    }),
+    command("shortcuts", "actions", "Keyboard shortcuts", {
+      action: { type: "help" },
+    }),
+  ];
+  const labels = { quit: "Close this menu", sudo: "Permission granted." };
+  const run = (query: string) => runQuery(site, query, labels);
+  const names = (list: Command[]) => list.map((c) => c.label);
+
+  it("starts at a colon", () => {
+    expect(commandWord(":projects")).toBe("projects");
+    expect(commandWord("  : q! ")).toBe("q!");
+    expect(commandWord(":")).toBe("");
+    expect(commandWord("projects")).toBeUndefined();
+    expect(commandWord("sudo :q")).toBeUndefined();
+  });
+
+  it("lists the visible commands for a bare colon", () => {
+    expect(names(run(":"))).toEqual(exNames);
+    expect(exNames).toEqual([
+      ":help",
+      ":projects",
+      ":notes",
+      ":experience",
+      ":about",
+      ":contact",
+      ":colophon",
+      ":lang",
+    ]);
+  });
+
+  it("completes a name and points at the command it runs", () => {
+    const [projects, ...rest] = run(":pro");
+    expect(rest).toEqual([]);
+    expect(projects).toMatchObject({
+      id: "ex-projects",
+      group: "commands",
+      label: ":projects",
+      hint: "Work",
+      action: { type: "navigate", href: "/en#section-work" },
+    });
+    expect(names(run(":c"))).toEqual([":contact", ":colophon"]);
+    expect(run(":lang")[0]?.action).toEqual({ type: "locale", locale: "es" });
+    expect(run(":help")[0]?.action).toEqual({ type: "help" });
+  });
+
+  it("answers hidden names only when typed whole", () => {
+    expect(names(run(":work"))).toEqual([":work"]);
+    expect(names(run(":wo"))).toEqual([]);
+    for (const quit of [":q", ":q!", ":wq"]) {
+      expect(run(quit), quit).toMatchObject([
+        { label: quit, hint: "Close this menu", action: { type: "quit" } },
+      ]);
+    }
+  });
+
+  it("finds nothing for a name Vim wouldn't know", () => {
+    expect(run(":nope")).toEqual([]);
+    expect(run(":Q")).toEqual([]);
+  });
+
+  it("grants sudo, and otherwise searches", () => {
+    expect(run("  SUDO  hire   Denis ")).toMatchObject([
+      {
+        id: "sudo",
+        label: "Permission granted.",
+        hint: "Contact",
+        action: { type: "navigate", href: "/en#section-contact" },
+      },
+    ]);
+    expect(ids(run("sudo"))).toEqual([]);
+    expect(ids(run("built"))).toEqual(["colophon"]);
   });
 });

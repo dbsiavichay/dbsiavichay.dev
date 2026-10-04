@@ -1,6 +1,7 @@
 import { ArrowUp } from "lucide-react";
 
 import { Container } from "@/components/ui/container";
+import { Kbd } from "@/components/ui/kbd";
 import { TextLink } from "@/components/ui/text-link";
 import { profile } from "@/data/profile";
 import { getI18n } from "@/i18n/server";
@@ -25,13 +26,28 @@ export async function Footer() {
           {SEPARATOR}
           <TextLink href={profile.repository}>{dict.footer.source}</TextLink>
         </p>
-        <a
-          href="#main"
-          className="inline-flex items-center gap-1.5 self-start rounded-sm transition-colors hover:text-fg md:self-auto"
-        >
-          {dict.footer.backToTop}
-          <ArrowUp aria-hidden="true" className="size-3.5" />
-        </a>
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
+          {/* Opened by the ⌘K island, which listens for clicks on it. Touch
+              screens have no use for it, so it isn't shown there. */}
+          <button
+            type="button"
+            data-shortcuts-help
+            aria-haspopup="dialog"
+            className="group inline-flex items-center gap-2 rounded-sm transition-colors hover:text-fg [@media(hover:none)]:hidden"
+          >
+            <Kbd aria-hidden="true" className="group-active:keycap-pressed">
+              ?
+            </Kbd>
+            {dict.footer.shortcuts}
+          </button>
+          <a
+            href="#main"
+            className="inline-flex items-center gap-1.5 rounded-sm transition-colors hover:text-fg"
+          >
+            {dict.footer.backToTop}
+            <ArrowUp aria-hidden="true" className="size-3.5" />
+          </a>
+        </div>
       </Container>
     </footer>
   );
